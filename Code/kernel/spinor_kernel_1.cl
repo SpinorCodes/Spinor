@@ -54,7 +54,7 @@ __kernel void thekernel(__global float4*    color,                              
         
   if(fr_spinor)
   {
-      p = particle_pos[0];
+      p += particle_pos[0];
   }
 
   // COMPUTING NEW POSITION:
