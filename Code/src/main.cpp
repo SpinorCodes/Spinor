@@ -290,7 +290,7 @@ int main ()
   ////////////////////////////////////////////////////////////////////////////////////////////////////
   while(!gl->closed ())                                                                             // Opening window...
   {
-    cl->opencl_queue->write (particle_pos, 16);
+    cl->write (16);
 
     cl->get_tic ();                                                                                 // Getting "tic" [us]...
     cl->acquire ();
