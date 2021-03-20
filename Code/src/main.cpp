@@ -85,6 +85,7 @@ int main ()
   nu_int*            offset         = new nu_int (12);                                              // Offset.
   nu_int*            freedom        = new nu_int (13);                                              // Freedom.
   nu_float*          dt             = new nu_float (14);                                            // Time step [s].
+  nu_int*            particle       = new nu_int (15);                                              // Particle.
 
   // MESH:
   mesh*              spinor         = new mesh (std::string (GMSH_HOME) + std::string (GMSH_MESH)); // Mesh cloth.
@@ -177,6 +178,24 @@ int main ()
       {
         color->data.push_back ({0.0f, 1.0f, 0.0f, 1.0f});                                           // Setting color...
       }
+    }
+
+    // Finding particle:
+    if(
+       (0 < sqrt (
+                  pow (position->data[i].x, 2) +
+                  pow (position->data[i].y, 2) +
+                  pow (position->data[i].z, 2)
+                 )) &&
+       (sqrt (
+              pow (position->data[i].x, 2) +
+              pow (position->data[i].y, 2) +
+              pow (position->data[i].z, 2)
+             ) < (sqrt (3)/2.0)*ds + EPSILON)
+      )
+    {
+      particle->data.push_back (i);                                                                 // Setting particle index...
+      std::cout << "Found particle: i = " << i << std::endl;
     }
   }
 

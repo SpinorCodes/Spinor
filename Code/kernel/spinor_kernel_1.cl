@@ -17,7 +17,8 @@ __kernel void thekernel(__global float4*    color,                              
                         __global int*       nearest,                                  // Neighbour.
                         __global int*       offset,                                   // Offset.
                         __global int*       freedom,                                  // Freedom flag.
-                        __global float*     dt_simulation)                            // Simulation time step.
+                        __global float*     dt_simulation,                            // Simulation time step.
+                        __global int*       particle)                                 // Particle.
 {
   //////////////////////////////////////////////////////////////////////////////////////
   ///////////////////////////////////// GLOBAL INDEX ///////////////////////////////////
@@ -33,6 +34,15 @@ __kernel void thekernel(__global float4*    color,                              
   float4        p_new             = (float4)(0.0f, 0.0f, 0.0f, 1.0f);                 // Central node position. 
   float         fr                = freedom[i];                                       // Central node freedom flag.
   float         dt                = dt_simulation[0];                                 // Simulation time step [s].
+  int           P0                = particle[0];
+  int           P1                = particle[1];
+  int           P2                = particle[2];
+  int           P3                = particle[3];
+  int           P4                = particle[4];
+  int           P5                = particle[5];
+  int           P6                = particle[6];
+  int           P7                = particle[7];
+  int           fr_spinor         = (i == P0) || (i == P1) || (i == P2) || (i == P3) || (i == P4) || (i == P5) || (i == P6) || (i == P7);
 
   // APPLYING FREEDOM CONSTRAINTS:
   if (fr == 0)
@@ -41,6 +51,13 @@ __kernel void thekernel(__global float4*    color,                              
     a = (float4)(0.0f, 0.0f, 0.0f, 1.0f);                                             // Constraining acceleration...
   }
         
+  if(fr_spinor)
+  {
+      p.x = 0.4f;
+  }
+
+    printf("fr = %d\n", fr);
+
   // COMPUTING NEW POSITION:
   p_new = p + v*dt + 0.5f*a*dt*dt;                                                    // Computing Taylor's approximation...
         

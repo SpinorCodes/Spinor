@@ -17,7 +17,8 @@ __kernel void thekernel(__global float4*    color,                              
                         __global int*       nearest,                            // Neighbour.
                         __global int*       offset,                             // Offset.
                         __global int*       freedom,                            // Freedom flag.
-                        __global float*     dt_simulation)                      // Simulation time step.
+                        __global float*     dt_simulation,                      // Simulation time step.
+                        __global int*       particle)                           // Particle.
 {
   ////////////////////////////////////////////////////////////////////////////////
   //////////////////////////////////// INDEXES ///////////////////////////////////
@@ -45,6 +46,7 @@ __kernel void thekernel(__global float4*    color,                              
   float         m                 = mass[n];                                    // Central node mass.
   float         B                 = friction[0];                                // Central node friction.
   float         fr                = freedom[n];                                 // Central node freedom flag.
+  float4        Fg                = (float4)(0.0f, 0.0f, 10.0f, 1.0f);           // Central node gravitational force.
   float4        Fe                = (float4)(0.0f, 0.0f, 0.0f, 1.0f);           // Central node elastic force.  
   float4        Fv                = (float4)(0.0f, 0.0f, 0.0f, 1.0f);           // Central node viscous force.
   float4        Fv_est            = (float4)(0.0f, 0.0f, 0.0f, 1.0f);           // Central node viscous force (estimation).
@@ -58,6 +60,15 @@ __kernel void thekernel(__global float4*    color,                              
   float         S                 = 0.0f;                                       // Neighbour link strain.
   float         L                 = 0.0f;                                       // Neighbour link length.
   float         dt                = dt_simulation[0];                           // Simulation time step [s].
+  int           P0                = particle[0];
+  int           P1                = particle[1];
+  int           P2                = particle[2];
+  int           P3                = particle[3];
+  int           P4                = particle[4];
+  int           P5                = particle[5];
+  int           P6                = particle[6];
+  int           P7                = particle[7];
+  int           fr_spinor         = (i == P0) || (i == P1) || (i == P2) || (i == P3) || (i == P4) || (i == P5) || (i == P6) || (i == P7);
 
   // COMPUTING STRIDE MINIMUM INDEX:
   if (i == 0)
@@ -95,7 +106,7 @@ __kernel void thekernel(__global float4*    color,                              
   Fv = -B*v_int;                                                                // Computing node viscous force...
 
   // COMPUTING TOTAL FORCE:
-  F  = Fe + Fv;                                                                 // Total force applied to the particle [N]...
+  F  = Fg + Fe + Fv;                                                                 // Total force applied to the particle [N]...
 
   // COMPUTING NEW ACCELERATION ESTIMATION:
   a_est  = F/m;                                                                 // Computing acceleration [m/s^2]...
@@ -107,7 +118,7 @@ __kernel void thekernel(__global float4*    color,                              
   Fv_est = -B*v_est;                                                            // Computing node viscous force...
 
   // COMPUTING NEW TOTAL FORCE:
-  F_new = Fe + Fv_est;                                                          // Computing total node force...
+  F_new = Fg + Fe + Fv_est;                                                          // Computing total node force...
 
   // COMPUTING NEW ACCELERATION:
   a_new = F_new/m;                                                              // Computing acceleration...
