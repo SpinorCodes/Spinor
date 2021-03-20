@@ -13,8 +13,8 @@ __kernel void thekernel(__global float4*    color,                              
                         __global float*     resting,                                  // Resting distance.
                         __global float*     friction,                                 // Friction.
                         __global float*     mass,                                     // Mass.
-                        __global float*     central,                                  // Central.
-                        __global int*       nearest,                                  // Neighbour.
+                        __global int*       central,                                  // Central.
+                        __global int*       neighbour,                                // Neighbour.
                         __global int*       offset,                                   // Offset.
                         __global int*       freedom,                                  // Freedom flag.
                         __global float*     dt_simulation,                            // Simulation time step.
@@ -32,7 +32,7 @@ __kernel void thekernel(__global float4*    color,                              
   float4        v                 = velocity[i];                                      // Central node velocity.
   float4        a                 = acceleration[i];                                  // Central node acceleration.
   float4        p_new             = (float4)(0.0f, 0.0f, 0.0f, 1.0f);                 // Central node position. 
-  float         fr                = freedom[i];                                       // Central node freedom flag.
+  int           fr                = freedom[i];                                       // Central node freedom flag.
   float         dt                = dt_simulation[0];                                 // Simulation time step [s].
   int           P0                = particle[0];
   int           P1                = particle[1];
@@ -53,10 +53,8 @@ __kernel void thekernel(__global float4*    color,                              
         
   if(fr_spinor)
   {
-      p.x = 0.4f;
+      //p.x = 0.4f;
   }
-
-    printf("fr = %d\n", fr);
 
   // COMPUTING NEW POSITION:
   p_new = p + v*dt + 0.5f*a*dt*dt;                                                    // Computing Taylor's approximation...

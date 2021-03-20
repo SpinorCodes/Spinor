@@ -13,8 +13,8 @@ __kernel void thekernel(__global float4*    color,                              
                         __global float*     resting,                            // Resting distance.
                         __global float*     friction,                           // Friction.
                         __global float*     mass,                               // Mass.
-                        __global float*     central,                            // Central.
-                        __global int*       nearest,                            // Neighbour.
+                        __global int*       central,                            // Central.
+                        __global int*       neighbour,                            // Neighbour.
                         __global int*       offset,                             // Offset.
                         __global int*       freedom,                            // Freedom flag.
                         __global float*     dt_simulation,                      // Simulation time step.
@@ -45,14 +45,14 @@ __kernel void thekernel(__global float4*    color,                              
   float4        a_est             = (float4)(0.0f, 0.0f, 0.0f, 1.0f);           // Central node acceleration (estimation).
   float         m                 = mass[n];                                    // Central node mass.
   float         B                 = friction[0];                                // Central node friction.
-  float         fr                = freedom[n];                                 // Central node freedom flag.
-  float4        Fg                = (float4)(0.0f, 0.0f, 10.0f, 1.0f);           // Central node gravitational force.
+  int           fr                = freedom[n];                                 // Central node freedom flag.
+  float4        Fg                = (float4)(0.0f, 0.0f, 1.0f, 1.0f);           // Central node gravitational force.
   float4        Fe                = (float4)(0.0f, 0.0f, 0.0f, 1.0f);           // Central node elastic force.  
   float4        Fv                = (float4)(0.0f, 0.0f, 0.0f, 1.0f);           // Central node viscous force.
   float4        Fv_est            = (float4)(0.0f, 0.0f, 0.0f, 1.0f);           // Central node viscous force (estimation).
   float4        F                 = (float4)(0.0f, 0.0f, 0.0f, 1.0f);           // Central node total force.
   float4        F_new             = (float4)(0.0f, 0.0f, 0.0f, 1.0f);           // Central node total force (new).
-  float4        neighbour         = (float4)(0.0f, 0.0f, 0.0f, 1.0f);           // Neighbour node position.
+  float4        nearest           = (float4)(0.0f, 0.0f, 0.0f, 1.0f);           // Neighbour node position.
   float4        link              = (float4)(0.0f, 0.0f, 0.0f, 1.0f);           // Neighbour link.
   float4        D                 = (float4)(0.0f, 0.0f, 0.0f, 1.0f);           // Neighbour displacement.
   float         R                 = 0.0f;                                       // Neighbour link resting length.
@@ -83,9 +83,9 @@ __kernel void thekernel(__global float4*    color,                              
   // COMPUTING ELASTIC FORCE:
   for (j = j_min; j < j_max; j++)
   {
-    k = nearest[j];                                                             // Computing neighbour index...
-    neighbour = position_int[k];                                                // Getting neighbour position...
-    link = neighbour - p_int;                                                   // Getting neighbour link vector...
+    k = neighbour[j];                                                           // Computing neighbour index...
+    nearest = position_int[k];                                                  // Getting neighbour position...
+    link = nearest - p_int;                                                     // Getting neighbour link vector...
     R = resting[j];                                                             // Getting neighbour link resting length...
     K = stiffness[j];                                                           // Getting neighbour link stiffness...
     L = length(link);                                                           // Computing neighbour link length...
@@ -122,7 +122,7 @@ __kernel void thekernel(__global float4*    color,                              
 
   // COMPUTING NEW ACCELERATION:
   a_new = F_new/m;                                                              // Computing acceleration...
-
+  
   // APPLYING FREEDOM CONSTRAINTS:
   if (fr == 0)
   {
