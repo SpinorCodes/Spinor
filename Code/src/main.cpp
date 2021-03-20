@@ -86,6 +86,7 @@ int main ()
   nu_int*            freedom        = new nu_int (13);                                              // Freedom.
   nu_float*          dt             = new nu_float (14);                                            // Time step [s].
   nu_int*            particle       = new nu_int (15);                                              // Particle.
+  nu_float4*         particle_pos   = new nu_float4 (16);                                           // Particle position.
 
   // MESH:
   mesh*              spinor         = new mesh (std::string (GMSH_HOME) + std::string (GMSH_MESH)); // Mesh cloth.
@@ -199,6 +200,8 @@ int main ()
     }
   }
 
+  particle_pos->data.push_back ({0.0f, 0.0f, 0.0f, 1.0f});                                          // Setting initial particle's position...
+
   // SETTING MESH PHYSICAL CONSTRAINTS:
   spinor->process (ABCD, 2, NU_MSH_PNT);                                                            // Processing mesh...
   point       = spinor->node;                                                                       // Getting nodes on border...
@@ -287,6 +290,8 @@ int main ()
   ////////////////////////////////////////////////////////////////////////////////////////////////////
   while(!gl->closed ())                                                                             // Opening window...
   {
+    cl->opencl_queue->write (particle_pos, 16);
+
     cl->get_tic ();                                                                                 // Getting "tic" [us]...
     cl->acquire ();
     cl->execute (K1, NU_WAIT);                                                                      // Executing OpenCL kernel...
@@ -304,6 +309,16 @@ int main ()
     if(gl->button_CROSS)
     {
       gl->close ();                                                                                 // Closing gl...
+    }
+
+    if(gl->button_DPAD_LEFT)
+    {
+      particle_pos->data[0] = {-0.4f, 0.0f, 0.0f, 1.0f};
+    }
+
+    if(gl->button_DPAD_RIGHT)
+    {
+      particle_pos->data[0] = {0.4f, 0.0f, 0.0f, 1.0f};
     }
 
     cl->get_toc ();                                                                                 // Getting "toc" [us]...

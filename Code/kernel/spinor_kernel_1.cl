@@ -18,7 +18,8 @@ __kernel void thekernel(__global float4*    color,                              
                         __global int*       offset,                                   // Offset.
                         __global int*       freedom,                                  // Freedom flag.
                         __global float*     dt_simulation,                            // Simulation time step.
-                        __global int*       particle)                                 // Particle.
+                        __global int*       particle,                                 // Particle.
+                        __global float4*    particle_pos)                             // Paritcle's position.
 {
   //////////////////////////////////////////////////////////////////////////////////////
   ///////////////////////////////////// GLOBAL INDEX ///////////////////////////////////
@@ -53,7 +54,7 @@ __kernel void thekernel(__global float4*    color,                              
         
   if(fr_spinor)
   {
-      //p.x = 0.4f;
+      p = particle_pos[0];
   }
 
   // COMPUTING NEW POSITION:

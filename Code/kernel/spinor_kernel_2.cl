@@ -14,11 +14,12 @@ __kernel void thekernel(__global float4*    color,                              
                         __global float*     friction,                           // Friction.
                         __global float*     mass,                               // Mass.
                         __global int*       central,                            // Central.
-                        __global int*       neighbour,                            // Neighbour.
+                        __global int*       neighbour,                          // Neighbour.
                         __global int*       offset,                             // Offset.
                         __global int*       freedom,                            // Freedom flag.
                         __global float*     dt_simulation,                      // Simulation time step.
-                        __global int*       particle)                           // Particle.
+                        __global int*       particle,                           // Particle.
+                        __global float4*    particle_pos)                       // Paritcle's position.
 {
   ////////////////////////////////////////////////////////////////////////////////
   //////////////////////////////////// INDEXES ///////////////////////////////////
@@ -46,7 +47,6 @@ __kernel void thekernel(__global float4*    color,                              
   float         m                 = mass[n];                                    // Central node mass.
   float         B                 = friction[0];                                // Central node friction.
   int           fr                = freedom[n];                                 // Central node freedom flag.
-  float4        Fg                = (float4)(0.0f, 0.0f, 1.0f, 1.0f);           // Central node gravitational force.
   float4        Fe                = (float4)(0.0f, 0.0f, 0.0f, 1.0f);           // Central node elastic force.  
   float4        Fv                = (float4)(0.0f, 0.0f, 0.0f, 1.0f);           // Central node viscous force.
   float4        Fv_est            = (float4)(0.0f, 0.0f, 0.0f, 1.0f);           // Central node viscous force (estimation).
@@ -106,7 +106,7 @@ __kernel void thekernel(__global float4*    color,                              
   Fv = -B*v_int;                                                                // Computing node viscous force...
 
   // COMPUTING TOTAL FORCE:
-  F  = Fg + Fe + Fv;                                                                 // Total force applied to the particle [N]...
+  F  = Fe + Fv;                                                                 // Total force applied to the particle [N]...
 
   // COMPUTING NEW ACCELERATION ESTIMATION:
   a_est  = F/m;                                                                 // Computing acceleration [m/s^2]...
@@ -118,7 +118,7 @@ __kernel void thekernel(__global float4*    color,                              
   Fv_est = -B*v_est;                                                            // Computing node viscous force...
 
   // COMPUTING NEW TOTAL FORCE:
-  F_new = Fg + Fe + Fv_est;                                                          // Computing total node force...
+  F_new = Fe + Fv_est;                                                          // Computing total node force...
 
   // COMPUTING NEW ACCELERATION:
   a_new = F_new/m;                                                              // Computing acceleration...
