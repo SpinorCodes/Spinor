@@ -32,8 +32,7 @@
 #endif
 
 #define SHADER_VERT   "voxel_vertex.vert"                                                           // OpenGL vertex shader.
-#define SHADER_GEOM_1 "voxel_geometry_1.geom"                                                       // OpenGL geometry shader.
-#define SHADER_GEOM_2 "voxel_geometry_2.geom"                                                       // OpenGL geometry shader.
+#define SHADER_GEOM   "voxel_geometry.geom"                                                         // OpenGL geometry shader.
 #define SHADER_FRAG   "voxel_fragment.frag"                                                         // OpenGL fragment shader.
 #define KERNEL_1      "spinor_kernel_1.cl"                                                          // OpenCL kernel source.
 #define KERNEL_2      "spinor_kernel_2.cl"                                                          // OpenCL kernel source.
@@ -61,7 +60,7 @@ int main ()
   float              gmp_orbit_rate = 1.0f;                                                         // Orbit angular rate coefficient [rev/s].
   float              gmp_pan_rate   = 1.0f;                                                         // Pan translation rate [m/s].
   float              gmp_decaytime  = 1.25f;                                                        // Low pass filter decay time [s].
-  float              gmp_deadzone   = 0.20f;                                                        // Gamepad joystick deadzone [0...1].
+  float              gmp_deadzone   = 0.30f;                                                        // Gamepad joystick deadzone [0...1].
 
   // NEUTRINO:
   opengl*            gl             = new opengl (NAME, SX, SY, ORB_X, ORB_Y, PAN_X, PAN_Y, PAN_Z); // OpenGL context.
@@ -96,14 +95,12 @@ int main ()
   std::vector<GLint> point;                                                                         // Point on frame.
   size_t             point_nodes;                                                                   // Number of point nodes.
   float              ds             = 0.2f;                                                         // Cell size [m].
-  int                ABCD           = 1;                                                            // Loop "ABCD".
-  int                EFGH           = 2;                                                            // Loop "EFGH".
-  int                ADHE           = 3;                                                            // Loop "ADHE".
-  int                BCGF           = 4;                                                            // Loop "BCGF".
-  int                ABFE           = 5;                                                            // Loop "ABFE".
-  int                DCGH           = 6;                                                            // Loop "DCGH".
-  int                AB_SIDE        = 7;                                                            // Side "AB".
-  int                DA_SIDE        = 8;                                                            // Side "DA".
+  int                ABCD           = 13;                                                           // Loop "ABCD".
+  int                EFGH           = 14;                                                           // Loop "EFGH".
+  int                ADHE           = 15;                                                           // Loop "ADHE".
+  int                BCGF           = 16;                                                           // Loop "BCGF".
+  int                ABFE           = 17;                                                           // Loop "ABFE".
+  int                DCGH           = 18;                                                           // Loop "DCGH".
   int                VOLUME         = 1;                                                            // Entire volume.
 
   // SIMULATION VARIABLES:
@@ -251,8 +248,7 @@ int main ()
   //////////////////////////////////// OPENGL SHADERS INITIALIZATION /////////////////////////////////
   ////////////////////////////////////////////////////////////////////////////////////////////////////
   S->addsource (std::string (SHADER_HOME) + std::string (SHADER_VERT), NU_VERTEX);                  // Setting shader source file...
-  S->addsource (std::string (SHADER_HOME) + std::string (SHADER_GEOM_1), NU_GEOMETRY);              // Setting shader source file...
-  S->addsource (std::string (SHADER_HOME) + std::string (SHADER_GEOM_2), NU_GEOMETRY);              // Setting shader source file...
+  S->addsource (std::string (SHADER_HOME) + std::string (SHADER_GEOM), NU_GEOMETRY);                // Setting shader source file...
   S->addsource (std::string (SHADER_HOME) + std::string (SHADER_FRAG), NU_FRAGMENT);                // Setting shader source file...
   S->build (neighbours);                                                                            // Building shader program...
 
@@ -269,7 +265,7 @@ int main ()
     cl->get_tic ();                                                                                 // Getting "tic" [us]...
     cl->acquire ();
     cl->execute (K1, NU_WAIT);                                                                      // Executing OpenCL kernel...
-    //cl->execute (K2, NU_WAIT);                                                                       // Executing OpenCL kernel...
+    cl->execute (K2, NU_WAIT);                                                                      // Executing OpenCL kernel...
     cl->release ();
 
     gl->clear ();                                                                                   // Clearing gl...

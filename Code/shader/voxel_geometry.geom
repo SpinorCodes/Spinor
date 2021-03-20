@@ -1,8 +1,6 @@
 /// @file
 #version 460 core
 
-float x_over_y(float x, float y);
-
 uniform mat4 V_mat;                                                             // View matrix.
 uniform mat4 P_mat;                                                             // Projection matrix.
 uniform float size_x;                                                           // Framebuffer size_x.
@@ -22,64 +20,19 @@ layout(std430, binding = 1) buffer voxel_position
   vec4 position_SSBO[];                                                         // Voxel position SSBO.
 };
 
-layout(std430, binding = 2) buffer voxel_velocity
-{
-  vec4 velocity_SSBO[];                                                         // Voxel velocity SSBO.
-};
-
-layout(std430, binding = 3) buffer voxel_acceleration
-{
-  vec4 acceleration_SSBO[];                                                     // Voxel acceleration SSBO.
-};
-
-layout(std430, binding = 4) buffer voxel_position_int
-{
-  vec4 position_int_SSBO[];                                                     // Voxel intermediate position SSBO.
-};
-
-layout(std430, binding = 5) buffer voxel_velocity_int
-{
-  vec4 velocity_int_SSBO[];                                                     // Voxel intermediate velocity SSBO.
-};
-
-layout(std430, binding = 6) buffer voxel_stiffness
-{
-  float stiffness_SSBO[];                                                       // Voxel stiffness SSBO.
-};
-
 layout(std430, binding = 7) buffer voxel_resting
 {
   float resting_SSBO[];                                                         // Voxel resting SSBO.
 };
 
-layout(std430, binding = 8) buffer voxel_friction
-{
-  float friction_SSBO[];                                                        // Voxel friction SSBO.
-};
-
-layout(std430, binding = 9) buffer voxel_central
+layout(std430, binding = 10) buffer voxel_central
 {
   int central_SSBO[];                                                           // Voxel central SSBO.
 };
 
-layout(std430, binding = 10) buffer voxel_nearest
+layout(std430, binding = 11) buffer voxel_neighbour
 {
-  int nearest_SSBO[];                                                           // Voxel nearest SSBO.
-};
-
-layout(std430, binding = 11) buffer voxel_offset
-{
-  int offset_SSBO[];                                                            // Voxel offset SSBO.
-};
-
-layout(std430, binding = 12) buffer voxel_freedom
-{
-  int freedom_SSBO[];                                                           // Voxel freedom SSBO.
-};
-
-layout(std430, binding = 13) buffer voxel_dt
-{
-  float dt_SSBO[];                                                              // Voxel dt SSBO.
+  int neighbour_SSBO[];                                                         // Voxel neighbour SSBO.
 };
 
 out vec4 color;                                                                 // Fragment color.
@@ -118,7 +71,7 @@ void main()
   s = 0.02;                                                                     // Setting billboard thickness (in clip space)...
 
   // BUILDING LINE FROM CENTER TO NEIGHBOUR:
-  j = nearest_SSBO[i];                                                          // Computing neighbour index...
+  j = neighbour_SSBO[i];                                                        // Computing neighbour index...
   k = central_SSBO[i];                                                          // Computing central node index...
   L = resting_SSBO[i];                                                          // Getting link resting distance...
 
@@ -146,8 +99,7 @@ void main()
   f = vec4(P_mat*(V_mat*position_SSBO[j] + 0.5*(C + D)));                       // Computing billboard "cd" midpoint (in clip space)...
   height = length(vec2(AR*(b.x/b.w - a.x/a.w), (b.y/b.w - a.y/a.w)));           // Computing billboard height (in window space)...
   base = length(vec2(AR*(f.x/f.w - e.x/e.w), (f.y/f.w - e.y/e.w)));             // Computing billboard base (in window space)...
-  //AR_quad = base/height;                                                      // Computing bollboard aspect ratio (in window space)...
-  AR_quad = x_over_y(base, height);
+  AR_quad = base/height;                                                        // Computing bollboard aspect ratio (in window space)...
 
   // GENERATING BILLBOARD VERTICES:
   color = color_SSBO[i];                                                        // Setting voxel color...  
