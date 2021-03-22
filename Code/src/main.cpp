@@ -38,7 +38,7 @@
 #define KERNEL_2      "spinor_kernel_2.cl"                                                          // OpenCL kernel source.
 #define GMSH_MESH     "spinor.msh"                                                                  // GMSH mesh.
 
-#define EPSILON       0.01f                                                                         // Float epsilon for mesh.
+#define EPSILON       0.005f                                                                        // Float epsilon for mesh.
 
 // INCLUDES:
 #include "nu.hpp"                                                                                   // Neutrino header file.
@@ -94,7 +94,7 @@ int main ()
   size_t             neighbours;                                                                    // Number of neighbours.
   std::vector<GLint> point;                                                                         // Point on frame.
   size_t             point_nodes;                                                                   // Number of point nodes.
-  float              ds             = 0.2f;                                                         // Cell size [m].
+  float              ds             = 0.1f;                                                         // Cell size [m].
   int                ABCD           = 13;                                                           // "ABCD" surface tag.
   int                EFGH           = 14;                                                           // "EFGH" surface tag.
   int                ADHE           = 15;                                                           // "ADHE" surface tag.
@@ -185,7 +185,7 @@ int main ()
     }
     else
     {
-      color->data.push_back ({0.0f, 1.0f, 0.0f, 1.0f});                                             // Setting color...
+      color->data.push_back ({0.0f, 1.0f, 0.0f, 0.3f});                                             // Setting color...
     }
   }
 
@@ -202,6 +202,8 @@ int main ()
     spinor->process (boundary[i], 2, NU_MSH_PNT);                                                   // Processing mesh...
     point       = spinor->node;                                                                     // Getting nodes on border...
     point_nodes = point.size ();                                                                    // Getting the number of nodes on border...
+
+    std::cout << "surface nodes = " << point_nodes << std::endl;
 
     for(j = 0; j < point_nodes; j++)
     {
