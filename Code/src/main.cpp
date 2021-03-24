@@ -32,7 +32,7 @@
 #define KERNEL_2      "spinor_kernel_2.cl"                                                          // OpenCL kernel source.
 #define MESH          "spinor.msh"                                                                  // GMSH mesh.
 
-#define EPSILON       0.005f                                                                        // Float epsilon for mesh.
+#define EPSILON       0.9f*0.005f                                                                   // Float epsilon for mesh.
 
 // INCLUDES:
 #include "nu.hpp"                                                                                   // Neutrino header file.
@@ -98,8 +98,10 @@ int main ()
   std::vector<int>   boundary;                                                                      // Boundary array.
   float              px;
   float              py;
+  float              pz;
   float              px_new;
   float              py_new;
+  float              pz_new;
 
   // SIMULATION VARIABLES:
   float              ds             = 0.1f;                                                         // Cell size [m].
@@ -131,6 +133,9 @@ int main ()
   // SETTING NEUTRINO ARRAYS ("nodes" depending):
   for(i = 0; i < nodes; i++)
   {
+    position->data[i].x *= 0.9f;
+    position->data[i].y *= 0.9f;
+    position->data[i].z *= 0.9f;
     position_int->data.push_back (position->data[i]);                                               // Setting intermediate position...
     velocity->data.push_back ({0.0f, 0.0f, 0.0f, 1.0f});                                            // Setting velocity...
     velocity_int->data.push_back ({0.0f, 0.0f, 0.0f, 1.0f});                                        // Setting intermediate velocity...
@@ -149,11 +154,12 @@ int main ()
               pow (position->data[i].x, 2) +
               pow (position->data[i].y, 2) +
               pow (position->data[i].z, 2)
-             ) < (sqrt (3)/2.0)*ds + EPSILON)
+             ) < (sqrt (3)/2.0)*0.9f*ds + EPSILON)
       )
     {
       particle->data.push_back (i);                                                                 // Setting particle index...
       particle_pos->data.push_back (position->data[i]);                                             // Setting initial particle's position...
+      freedom->data[i] = (0);                                                                       // Resetting freedom flag...
       std::cout << "Found particle: i = " << i << std::endl;
     }
   }
@@ -267,22 +273,42 @@ int main ()
 
     if(gl->button_DPAD_DOWN)
     {
-      particle_pos->data[0].y -= 0.01f;
+      for(i = 0; i < 8; i++)
+      {
+        px                      = particle_pos->data[i].x;
+        pz                      = particle_pos->data[i].z;
+
+        px_new                  = +cos (0.01f)*px + sin (0.01f)*pz;
+        pz_new                  = -sin (0.01f)*px + cos (0.01f)*pz;
+
+        particle_pos->data[i].x = px_new;
+        particle_pos->data[i].z = pz_new;
+      }
     }
 
     if(gl->button_DPAD_UP)
     {
-      particle_pos->data[0].y += 0.01f;
+      for(i = 0; i < 8; i++)
+      {
+        px                      = particle_pos->data[i].x;
+        pz                      = particle_pos->data[i].z;
+
+        px_new                  = +cos (0.01f)*px - sin (0.01f)*pz;
+        pz_new                  = +sin (0.01f)*px + cos (0.01f)*pz;
+
+        particle_pos->data[i].x = px_new;
+        particle_pos->data[i].z = pz_new;
+      }
     }
 
     if(gl->button_LEFT_BUMPER)
     {
-      particle_pos->data[0].z -= 0.01f;
+
     }
 
     if(gl->button_RIGHT_BUMPER)
     {
-      particle_pos->data[0].z += 0.01f;
+
     }
 
     if(gl->button_CROSS)
