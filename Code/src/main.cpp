@@ -96,6 +96,10 @@ int main ()
   int                DCGH           = 18;                                                           // "DCGH" surface tag.
   int                VOLUME         = 1;                                                            // Entire volume tag.
   std::vector<int>   boundary;                                                                      // Boundary array.
+  float              px;
+  float              py;
+  float              px_new;
+  float              py_new;
 
   // SIMULATION VARIABLES:
   float              ds             = 0.1f;                                                         // Cell size [m].
@@ -233,7 +237,17 @@ int main ()
 
     if(gl->button_DPAD_LEFT)
     {
-      particle_pos->data[0].x -= 0.01f;
+      for(i = 0; i < 8; i++)
+      {
+        px                      = particle_pos->data[i].x;
+        py                      = particle_pos->data[i].y;
+
+        px_new                  = +cos (0.1f)*px + sin (0.1f)*py;
+        py_new                  = -sin (0.1f)*px + cos (0.1f)*py;
+
+        particle_pos->data[i].x = px_new;
+        particle_pos->data[i].y = py_new;
+      }
     }
 
     if(gl->button_DPAD_RIGHT)
