@@ -82,7 +82,7 @@ int main ()
   nu_float4*         particle_pos   = new nu_float4 (16);                                           // Particle position.
 
   // MESH:
-  nu_mesh*           spinor         = new nu_mesh (std::string (GMSH_HOME) + std::string (MESH));   // Mesh cloth.
+  nu::mesh*          spinor         = new nu::mesh (std::string (GMSH_HOME) + std::string (MESH));  // Mesh cloth.
   size_t             nodes;                                                                         // Number of nodes.
   size_t             elements;                                                                      // Number of elements.
   size_t             groups;                                                                        // Number of groups.
