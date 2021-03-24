@@ -19,12 +19,6 @@
   #define GMSH_HOME   "../Spinor/Code/mesh/"                                                        // Linux GMSH mesh directory.
 #endif
 
-#ifdef __APPLE__
-  #define SHADER_HOME "../Spinor/Code/shader/"                                                      // Mac OpenGL shaders directory.
-  #define KERNEL_HOME "../Spinor/Code/kernel/"                                                      // Mac OpenCL kernels directory.
-  #define GMSH_HOME   "../Spinor/Code/mesh/"                                                        // Linux GMSH mesh directory.
-#endif
-
 #ifdef WIN32
   #define SHADER_HOME "..\\..\\..\\Spinor\\Code\\shader\\"                                          // Windows OpenGL shaders directory.
   #define KERNEL_HOME "..\\..\\..\\Spinor\\Code\\kernel\\"                                          // Windows OpenCL kernels directory.
@@ -36,7 +30,7 @@
 #define SHADER_FRAG   "voxel_fragment.frag"                                                         // OpenGL fragment shader.
 #define KERNEL_1      "spinor_kernel_1.cl"                                                          // OpenCL kernel source.
 #define KERNEL_2      "spinor_kernel_2.cl"                                                          // OpenCL kernel source.
-#define GMSH_MESH     "spinor.msh"                                                                  // GMSH mesh.
+#define MESH          "spinor.msh"                                                                  // GMSH mesh.
 
 #define EPSILON       0.005f                                                                        // Float epsilon for mesh.
 
@@ -61,11 +55,12 @@ int main ()
   float              gmp_deadzone   = 0.30f;                                                        // Gamepad joystick deadzone [0...1].
 
   // NEUTRINO:
-  opengl*            gl             = new opengl (NAME, SX, SY, ORB_X, ORB_Y, PAN_X, PAN_Y, PAN_Z); // OpenGL context.
-  opencl*            cl             = new opencl (NU_GPU);                                          // OpenCL context.
-  shader*            S              = new shader ();                                                // OpenGL shader program.
-  kernel*            K1             = new kernel ();                                                // OpenCL kernel array.
-  kernel*            K2             = new kernel ();                                                // OpenCL kernel array.
+  nu_opengl*         gl             =
+    new nu_opengl (NAME, SX, SY, ORB_X, ORB_Y, PAN_X, PAN_Y, PAN_Z);                                // OpenGL context.
+  nu_opencl*         cl             = new nu_opencl (NU_GPU);                                       // OpenCL context.
+  nu_shader*         S              = new nu_shader ();                                             // OpenGL shader program.
+  nu_kernel*         K1             = new nu_kernel ();                                             // OpenCL kernel array.
+  nu_kernel*         K2             = new nu_kernel ();                                             // OpenCL kernel array.
 
   // KERNEL VARIABLES:
   nu_float4*         color          = new nu_float4 (0);                                            // Color [].
@@ -87,7 +82,7 @@ int main ()
   nu_float4*         particle_pos   = new nu_float4 (16);                                           // Particle position.
 
   // MESH:
-  mesh*              spinor         = new mesh (std::string (GMSH_HOME) + std::string (GMSH_MESH)); // Mesh cloth.
+  nu_mesh*           spinor         = new nu_mesh (std::string (GMSH_HOME) + std::string (MESH));   // Mesh cloth.
   size_t             nodes;                                                                         // Number of nodes.
   size_t             elements;                                                                      // Number of elements.
   size_t             groups;                                                                        // Number of groups.
@@ -117,18 +112,15 @@ int main ()
   /////////////////////////////////////////////////////////////////////////////////////////////////////
   // MESH:
   spinor->process (VOLUME, 3, NU_MSH_HEX_8);                                                        // Processing mesh...
-
   position->data  = spinor->node_coordinates;                                                       // Setting all node coordinates...
   neighbour->data = spinor->neighbour;                                                              // Setting neighbour indices...
   central->data   = spinor->neighbour_center;                                                       // Setting neighbour centers...
   offset->data    = spinor->neighbour_offset;                                                       // Setting neighbour offsets...
   resting->data   = spinor->neighbour_length;                                                       // Setting resting distances...
-
   nodes           = spinor->node.size ();                                                           // Getting the number of nodes...
   elements        = spinor->element.size ();                                                        // Getting the number of elements...
   groups          = spinor->group.size ();                                                          // Getting the number of groups...
   neighbours      = spinor->neighbour.size ();                                                      // Getting the number of neighbours...
-
   std::cout << "nodes = " << nodes << std::endl;
   std::cout << "elements = " << elements << std::endl;
   std::cout << "groups = " << groups << std::endl;
@@ -136,7 +128,6 @@ int main ()
   std::cout << "offsets = " << spinor->neighbour_offset.size () << std::endl;
   std::cout << "lenghts = " << spinor->neighbour_length.size () << std::endl;
   std::cout << "links = " << spinor->neighbour_link.size () << std::endl;
-
   dt_critical     = sqrt (m/K);                                                                     // Critical time step [s].
   dt_simulation   = 0.2f*dt_critical;                                                               // Simulation time step [s].
 
@@ -216,7 +207,6 @@ int main ()
   ////////////////////////////////////////////////////////////////////////////////////////////////////
   K1->addsource (std::string (KERNEL_HOME) + std::string (KERNEL_1));                               // Setting kernel source file...
   K1->build (nodes, 0, 0);                                                                          // Building kernel program...
-
   K2->addsource (std::string (KERNEL_HOME) + std::string (KERNEL_2));                               // Setting kernel source file...
   K2->build (nodes, 0, 0);                                                                          // Building kernel program...
 
