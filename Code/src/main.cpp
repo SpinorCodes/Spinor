@@ -55,31 +55,31 @@ int main ()
   float              gmp_deadzone   = 0.30f;                                                        // Gamepad joystick deadzone [0...1].
 
   // NEUTRINO:
-  nu_opengl*         gl             =
-    new nu_opengl (NAME, SX, SY, ORB_X, ORB_Y, PAN_X, PAN_Y, PAN_Z);                                // OpenGL context.
-  nu_opencl*         cl             = new nu_opencl (NU_GPU);                                       // OpenCL context.
-  nu_shader*         S              = new nu_shader ();                                             // OpenGL shader program.
-  nu_kernel*         K1             = new nu_kernel ();                                             // OpenCL kernel array.
-  nu_kernel*         K2             = new nu_kernel ();                                             // OpenCL kernel array.
+  nu::opengl*        gl             =
+    new nu::opengl (NAME, SX, SY, ORB_X, ORB_Y, PAN_X, PAN_Y, PAN_Z);                               // OpenGL context.
+  nu::opencl*        cl             = new nu::opencl (NU_GPU);                                      // OpenCL context.
+  nu::shader*        S              = new nu::shader ();                                            // OpenGL shader program.
+  nu::kernel*        K1             = new nu::kernel ();                                            // OpenCL kernel array.
+  nu::kernel*        K2             = new nu::kernel ();                                            // OpenCL kernel array.
 
   // KERNEL VARIABLES:
-  nu_float4*         color          = new nu_float4 (0);                                            // Color [].
-  nu_float4*         position       = new nu_float4 (1);                                            // Position [m].
-  nu_float4*         velocity       = new nu_float4 (2);                                            // Velocity [m/s].
-  nu_float4*         acceleration   = new nu_float4 (3);                                            // Acceleration [m/s^2].
-  nu_float4*         position_int   = new nu_float4 (4);                                            // Position (intermediate) [m].
-  nu_float4*         velocity_int   = new nu_float4 (5);                                            // Velocity (intermediate) [m/s].
-  nu_float*          stiffness      = new nu_float (6);                                             // Stiffness.
-  nu_float*          resting        = new nu_float (7);                                             // Resting.
-  nu_float*          friction       = new nu_float (8);                                             // Friction.
-  nu_float*          mass           = new nu_float (9);                                             // Mass.
-  nu_int*            central        = new nu_int (10);                                              // Central nodes.
-  nu_int*            neighbour      = new nu_int (11);                                              // Neighbour.
-  nu_int*            offset         = new nu_int (12);                                              // Offset.
-  nu_int*            freedom        = new nu_int (13);                                              // Freedom.
-  nu_float*          dt             = new nu_float (14);                                            // Time step [s].
-  nu_int*            particle       = new nu_int (15);                                              // Particle.
-  nu_float4*         particle_pos   = new nu_float4 (16);                                           // Particle position.
+  nu::float4*        color          = new nu::float4 (0);                                           // Color [].
+  nu::float4*        position       = new nu::float4 (1);                                           // Position [m].
+  nu::float4*        velocity       = new nu::float4 (2);                                           // Velocity [m/s].
+  nu::float4*        acceleration   = new nu::float4 (3);                                           // Acceleration [m/s^2].
+  nu::float4*        position_int   = new nu::float4 (4);                                           // Position (intermediate) [m].
+  nu::float4*        velocity_int   = new nu::float4 (5);                                           // Velocity (intermediate) [m/s].
+  nu::float1*        stiffness      = new nu::float1 (6);                                           // Stiffness.
+  nu::float1*        resting        = new nu::float1 (7);                                           // Resting.
+  nu::float1*        friction       = new nu::float1 (8);                                           // Friction.
+  nu::float1*        mass           = new nu::float1 (9);                                           // Mass.
+  nu::int1*          central        = new nu::int1 (10);                                            // Central nodes.
+  nu::int1*          neighbour      = new nu::int1 (11);                                            // Neighbour.
+  nu::int1*          offset         = new nu::int1 (12);                                            // Offset.
+  nu::int1*          freedom        = new nu::int1 (13);                                            // Freedom.
+  nu::float1*        dt             = new nu::float1 (14);                                          // Time step [s].
+  nu::int1*          particle       = new nu::int1 (15);                                            // Particle.
+  nu::float4*        particle_pos   = new nu::float4 (16);                                          // Particle position.
 
   // MESH:
   nu::mesh*          spinor         = new nu::mesh (std::string (GMSH_HOME) + std::string (MESH));  // Mesh cloth.
