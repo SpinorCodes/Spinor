@@ -7,11 +7,11 @@
 #define SX            800                                                                           // Window x-size [px].
 #define SY            600                                                                           // Window y-size [px].
 #define NAME          "Neutrino - Spinor"                                                           // Window name.
-#define ORB_X         0.0f                                                                          // x-axis orbit initial rotation.
-#define ORB_Y         0.0f                                                                          // y-axis orbit initial rotation.
-#define PAN_X         0.0f                                                                          // x-axis pan initial translation.
-#define PAN_Y         0.0f                                                                          // y-axis pan initial translation.
-#define PAN_Z         -2.0f                                                                         // z-axis pan initial translation.
+#define ORBX          0.0f                                                                          // x-axis orbit initial rotation.
+#define ORBY          0.0f                                                                          // y-axis orbit initial rotation.
+#define PANX          0.0f                                                                          // x-axis pan initial translation.
+#define PANY          0.0f                                                                          // y-axis pan initial translation.
+#define PANZ          -2.0f                                                                         // z-axis pan initial translation.
 
 #ifdef __linux__
   #define SHADER_HOME "../Spinor/Code/shader/"                                                      // Linux OpenGL shaders directory.
@@ -54,15 +54,14 @@ int main ()
   float              gmp_decaytime  = 1.25f;                                                        // Low pass filter decay time [s].
   float              gmp_deadzone   = 0.30f;                                                        // Gamepad joystick deadzone [0...1].
 
-  // NEUTRINO:
-  nu::opengl*        gl             =
-    new nu::opengl (NAME, SX, SY, ORB_X, ORB_Y, PAN_X, PAN_Y, PAN_Z);                               // OpenGL context.
-  nu::opencl*        cl             = new nu::opencl (NU_GPU);                                      // OpenCL context.
+  // OPENGL:
+  nu::opengl*        gl             = new nu::opengl (NAME, SX, SY, ORBX, ORBY, PANX, PANY, PANZ);  // OpenGL context.
   nu::shader*        S              = new nu::shader ();                                            // OpenGL shader program.
+
+  // OPENCL:
+  nu::opencl*        cl             = new nu::opencl (NU_GPU);                                      // OpenCL context.
   nu::kernel*        K1             = new nu::kernel ();                                            // OpenCL kernel array.
   nu::kernel*        K2             = new nu::kernel ();                                            // OpenCL kernel array.
-
-  // KERNEL VARIABLES:
   nu::float4*        color          = new nu::float4 (0);                                           // Color [].
   nu::float4*        position       = new nu::float4 (1);                                           // Position [m].
   nu::float4*        velocity       = new nu::float4 (2);                                           // Velocity [m/s].
@@ -89,23 +88,22 @@ int main ()
   size_t             neighbours;                                                                    // Number of neighbours.
   std::vector<GLint> point;                                                                         // Point on frame.
   size_t             point_nodes;                                                                   // Number of point nodes.
-  float              ds             = 0.1f;                                                         // Cell size [m].
   int                ABCD           = 13;                                                           // "ABCD" surface tag.
   int                EFGH           = 14;                                                           // "EFGH" surface tag.
   int                ADHE           = 15;                                                           // "ADHE" surface tag.
   int                BCGF           = 16;                                                           // "BCGF" surface tag.
   int                ABFE           = 17;                                                           // "ABFE" surface tag.
   int                DCGH           = 18;                                                           // "DCGH" surface tag.
-  std::vector<int>   boundary;                                                                      // Boundary array.
   int                VOLUME         = 1;                                                            // Entire volume tag.
+  std::vector<int>   boundary;                                                                      // Boundary array.
 
   // SIMULATION VARIABLES:
+  float              ds             = 0.1f;                                                         // Cell size [m].
   float              m              = 1.0f;                                                         // Node mass [kg].
   float              K              = 1.0f;                                                         // Link elastic constant [kg/s^2].
   float              B              = 1.0f;                                                         // Damping [kg*s*m].
-  float              dt_critical;                                                                   // Critical time step [s].
-  float              dt_simulation;                                                                 // Simulation time step [s].
-
+  float              dt_critical    = sqrt (m/K);                                                   // Critical time step [s].
+  float              dt_simulation  = 0.2*dt_critical;                                              // Simulation time step [s].
 
   /////////////////////////////////////////////////////////////////////////////////////////////////////
   ///////////////////////////////////////// DATA INITIALIZATION ///////////////////////////////////////
@@ -121,15 +119,6 @@ int main ()
   elements        = spinor->element.size ();                                                        // Getting the number of elements...
   groups          = spinor->group.size ();                                                          // Getting the number of groups...
   neighbours      = spinor->neighbour.size ();                                                      // Getting the number of neighbours...
-  std::cout << "nodes = " << nodes << std::endl;
-  std::cout << "elements = " << elements << std::endl;
-  std::cout << "groups = " << groups << std::endl;
-  std::cout << "neighbours = " << neighbours << std::endl;
-  std::cout << "offsets = " << spinor->neighbour_offset.size () << std::endl;
-  std::cout << "lenghts = " << spinor->neighbour_length.size () << std::endl;
-  std::cout << "links = " << spinor->neighbour_link.size () << std::endl;
-  dt_critical     = sqrt (m/K);                                                                     // Critical time step [s].
-  dt_simulation   = 0.2f*dt_critical;                                                               // Simulation time step [s].
 
   // SETTING NEUTRINO ARRAYS (parameters):
   friction->data.push_back (B);                                                                     // Setting friction...
