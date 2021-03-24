@@ -52,9 +52,44 @@ __kernel void thekernel(__global float4*    color,                              
     a = (float4)(0.0f, 0.0f, 0.0f, 1.0f);                                             // Constraining acceleration...
   }
         
-  if(fr_spinor)
+  if(i == P0)
   {
-      p += particle_pos[0];
+      p = particle_pos[0];
+  }
+
+  if(i == P1)
+  {
+      p = particle_pos[1];
+  }
+
+  if(i == P2)
+  {
+      p = particle_pos[2];
+  }
+
+  if(i == P3)
+  {
+      p = particle_pos[3];
+  }
+
+  if(i == P4)
+  {
+      p = particle_pos[4];
+  }
+
+  if(i == P5)
+  {
+      p = particle_pos[5];
+  }
+
+  if(i == P6)
+  {
+      p = particle_pos[6];
+  }
+
+  if(i == P7)
+  {
+      p = particle_pos[7];
   }
 
   // COMPUTING NEW POSITION:
