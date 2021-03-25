@@ -32,7 +32,7 @@
 #define KERNEL_2      "spinor_kernel_2.cl"                                                          // OpenCL kernel source.
 #define MESH          "spinor.msh"                                                                  // GMSH mesh.
 
-#define EPSILON       0.9f*0.005f                                                                   // Float epsilon for mesh.
+#define EPSILON       1.0f*0.005f                                                                   // Float epsilon for mesh.
 
 // INCLUDES:
 #include "nu.hpp"                                                                                   // Neutrino header file.
@@ -133,9 +133,9 @@ int main ()
   // SETTING NEUTRINO ARRAYS ("nodes" depending):
   for(i = 0; i < nodes; i++)
   {
-    position->data[i].x *= 0.9f;
-    position->data[i].y *= 0.9f;
-    position->data[i].z *= 0.9f;
+    position->data[i].x *= 1.0f;
+    position->data[i].y *= 1.0f;
+    position->data[i].z *= 1.0f;
     position_int->data.push_back (position->data[i]);                                               // Setting intermediate position...
     velocity->data.push_back ({0.0f, 0.0f, 0.0f, 1.0f});                                            // Setting velocity...
     velocity_int->data.push_back ({0.0f, 0.0f, 0.0f, 1.0f});                                        // Setting intermediate velocity...
@@ -154,7 +154,7 @@ int main ()
               pow (position->data[i].x, 2) +
               pow (position->data[i].y, 2) +
               pow (position->data[i].z, 2)
-             ) < (sqrt (3)/2.0)*0.9f*ds + EPSILON)
+             ) < (sqrt (3)/2.0)*1.0f*ds + EPSILON)
       )
     {
       particle->data.push_back (i);                                                                 // Setting particle index...
