@@ -78,7 +78,8 @@ int main ()
   nu::int1*          freedom        = new nu::int1 (13);                                            // Freedom.
   nu::float1*        dt             = new nu::float1 (14);                                          // Time step [s].
   nu::int1*          particle       = new nu::int1 (15);                                            // Particle.
-  nu::float4*        particle_pos   = new nu::float4 (16);                                          // Particle position.
+  nu::int1*          particle_num   = new nu::int1 (16);                                            // Particle number.
+  nu::float4*        particle_pos   = new nu::float4 (17);                                          // Particle position.
 
   // MESH:
   nu::mesh*          spinor         = new nu::mesh (std::string (GMSH_HOME) + std::string (MESH));  // Mesh cloth.
@@ -154,7 +155,7 @@ int main ()
               pow (position->data[i].x, 2) +
               pow (position->data[i].y, 2) +
               pow (position->data[i].z, 2)
-             ) < (sqrt (3)/2.0)*1.0f*ds + EPSILON)
+             ) < (sqrt (3)/2.0)*5.0f*ds + EPSILON)
       )
     {
       particle->data.push_back (i);                                                                 // Setting particle index...
@@ -163,6 +164,9 @@ int main ()
       std::cout << "Found particle: i = " << i << std::endl;
     }
   }
+
+  particle_num->data.push_back (particle->data.size ());
+  std::cout << "Particle num = " << particle_num->data[0] << std::endl;
 
   // SETTING NEUTRINO ARRAYS ("neighbours" depending):
   for(i = 0; i < neighbours; i++)
@@ -228,7 +232,7 @@ int main ()
   while(!gl->closed ())                                                                             // Opening window...
   {
     cl->get_tic ();                                                                                 // Getting "tic" [us]...
-    cl->write (16);                                                                                 // Writing particle's position...
+    cl->write (17);                                                                                 // Writing particle's position...
     cl->acquire ();                                                                                 // Acquiring variables...
     cl->execute (K1, NU_WAIT);                                                                      // Executing OpenCL kernel...
     cl->execute (K2, NU_WAIT);                                                                      // Executing OpenCL kernel...
@@ -243,7 +247,7 @@ int main ()
 
     if(gl->button_DPAD_LEFT)
     {
-      for(i = 0; i < 8; i++)
+      for(i = 0; i < particle_num->data[0]; i++)
       {
         px                      = particle_pos->data[i].x;
         py                      = particle_pos->data[i].y;
@@ -258,7 +262,7 @@ int main ()
 
     if(gl->button_DPAD_RIGHT)
     {
-      for(i = 0; i < 8; i++)
+      for(i = 0; i < particle_num->data[0]; i++)
       {
         px                      = particle_pos->data[i].x;
         py                      = particle_pos->data[i].y;
@@ -273,7 +277,7 @@ int main ()
 
     if(gl->button_DPAD_DOWN)
     {
-      for(i = 0; i < 8; i++)
+      for(i = 0; i < particle_num->data[0]; i++)
       {
         px                      = particle_pos->data[i].x;
         pz                      = particle_pos->data[i].z;
@@ -288,7 +292,7 @@ int main ()
 
     if(gl->button_DPAD_UP)
     {
-      for(i = 0; i < 8; i++)
+      for(i = 0; i < particle_num->data[0]; i++)
       {
         px                      = particle_pos->data[i].x;
         pz                      = particle_pos->data[i].z;
@@ -303,12 +307,38 @@ int main ()
 
     if(gl->button_LEFT_BUMPER)
     {
+      for(i = 0; i < particle_num->data[0]; i++)
+      {
+        px                      = particle_pos->data[i].x;
+        py                      = particle_pos->data[i].y;
+        pz                      = particle_pos->data[i].z;
 
+        px_new                  = px*0.99f;
+        py_new                  = py*0.99f;
+        pz_new                  = pz*0.99f;
+
+        particle_pos->data[i].x = px_new;
+        particle_pos->data[i].y = py_new;
+        particle_pos->data[i].z = pz_new;
+      }
     }
 
     if(gl->button_RIGHT_BUMPER)
     {
+      for(i = 0; i < particle_num->data[0]; i++)
+      {
+        px                      = particle_pos->data[i].x;
+        py                      = particle_pos->data[i].y;
+        pz                      = particle_pos->data[i].z;
 
+        px_new                  = px/0.99f;
+        py_new                  = py/0.99f;
+        pz_new                  = pz/0.99f;
+
+        particle_pos->data[i].x = px_new;
+        particle_pos->data[i].y = py_new;
+        particle_pos->data[i].z = pz_new;
+      }
     }
 
     if(gl->button_CROSS)

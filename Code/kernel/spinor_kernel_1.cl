@@ -19,12 +19,14 @@ __kernel void thekernel(__global float4*    color,                              
                         __global int*       freedom,                                  // Freedom flag.
                         __global float*     dt_simulation,                            // Simulation time step.
                         __global int*       particle,                                 // Particle.
+                        __global int*       particle_num,                             // Particle number.
                         __global float4*    particle_pos)                             // Paritcle's position.
 {
   //////////////////////////////////////////////////////////////////////////////////////
-  ///////////////////////////////////// GLOBAL INDEX ///////////////////////////////////
+  //////////////////////////////////////// INDICES /////////////////////////////////////
   //////////////////////////////////////////////////////////////////////////////////////
   unsigned long i = get_global_id(0);                                                 // Global index [#].
+  unsigned long j;  
 
   //////////////////////////////////////////////////////////////////////////////////////
   //////////////////////////////////// CELL VARIABLES //////////////////////////////////
@@ -35,15 +37,7 @@ __kernel void thekernel(__global float4*    color,                              
   float4        p_new             = (float4)(0.0f, 0.0f, 0.0f, 1.0f);                 // Central node position. 
   int           fr                = freedom[i];                                       // Central node freedom flag.
   float         dt                = dt_simulation[0];                                 // Simulation time step [s].
-  int           P0                = particle[0];
-  int           P1                = particle[1];
-  int           P2                = particle[2];
-  int           P3                = particle[3];
-  int           P4                = particle[4];
-  int           P5                = particle[5];
-  int           P6                = particle[6];
-  int           P7                = particle[7];
-  int           fr_spinor         = (i == P0) || (i == P1) || (i == P2) || (i == P3) || (i == P4) || (i == P5) || (i == P6) || (i == P7);
+  int           p_num             = particle_num[0];                                  // Particle number.
 
   // APPLYING FREEDOM CONSTRAINTS:
   if (fr == 0)
@@ -51,45 +45,13 @@ __kernel void thekernel(__global float4*    color,                              
     v = (float4)(0.0f, 0.0f, 0.0f, 1.0f);                                             // Constraining velocity...
     a = (float4)(0.0f, 0.0f, 0.0f, 1.0f);                                             // Constraining acceleration...
   }
-        
-  if(i == P0)
-  {
-      p = particle_pos[0];
-  }
 
-  if(i == P1)
+  for(j = 0; j < p_num; j++)
   {
-      p = particle_pos[1];
-  }
-
-  if(i == P2)
-  {
-      p = particle_pos[2];
-  }
-
-  if(i == P3)
-  {
-      p = particle_pos[3];
-  }
-
-  if(i == P4)
-  {
-      p = particle_pos[4];
-  }
-
-  if(i == P5)
-  {
-      p = particle_pos[5];
-  }
-
-  if(i == P6)
-  {
-      p = particle_pos[6];
-  }
-
-  if(i == P7)
-  {
-      p = particle_pos[7];
+    if(i == particle[j])
+    {
+      p = particle_pos[j];
+    }
   }
 
   // COMPUTING NEW POSITION:
