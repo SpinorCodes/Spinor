@@ -30,6 +30,7 @@
 #define SHADER_FRAG   "voxel_fragment.frag"                                                         // OpenGL fragment shader.
 #define KERNEL_1      "spinor_kernel_1.cl"                                                          // OpenCL kernel source.
 #define KERNEL_2      "spinor_kernel_2.cl"                                                          // OpenCL kernel source.
+#define UTILITIES     "utilities.cl"                                                                // OpenCL utilities source.
 #define MESH          "spinor.msh"                                                                  // GMSH mesh.
 
 #define EPSILON       1.0f*0.005f                                                                   // Float epsilon for mesh.
