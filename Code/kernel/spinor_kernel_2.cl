@@ -83,6 +83,11 @@ __kernel void thekernel(__global float4*    color,                              
     L = length(link);                                                           // Computing neighbour link length...
     S = L - R;                                                                  // Computing neighbour link strain...
     
+    if (color[j].w != 0.0f)
+    {
+      color[j].xyz = colormap(0.5f*(1.0f + S/R) - 0.1f);                               // Setting color...
+    }
+    
     if(L > 0.0f)
     {
       D = S*normalize(link);                                                    // Computing neighbour link displacement...
@@ -94,7 +99,7 @@ __kernel void thekernel(__global float4*    color,                              
 
     Fe += K*D;                                                                  // Building up elastic force on central node...
   }
-  
+
   Fv = -B*v_int;                                                                // Computing node viscous force...
 
   // COMPUTING TOTAL FORCE:
