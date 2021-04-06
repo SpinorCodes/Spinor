@@ -20,8 +20,9 @@ layout(std430, binding = 1) buffer voxel_position
   vec4 position_SSBO[];                                                         // Voxel position SSBO.
 };
 
-out vec4 color;                                                                 // Fragment color.
-out vec2 quad;                                                                  // Billboard quad UV coordinates.
+out vec4  color;                                                                // Fragment color.
+out vec2  quad;                                                                 // Billboard quad UV coordinates.
+out float depth;                                                                // z-depth.
 
 void main()
 {
@@ -36,7 +37,7 @@ void main()
   vec4 b;                                                                       // Billboard boundary "b" (in clip space).
   vec4 c;                                                                       // Billboard boundary "c" (in clip space).
   vec4 d;                                                                       // Billboard boundary "d" (in clip space).
-  
+
   float s;                                                                      // Billboard thickness (in clip space).
 
   s = 0.02;                                                                     // Setting billboard thickness (in clip space)...
@@ -52,6 +53,9 @@ void main()
   b = vec4(P_mat*(V_mat*position_SSBO[i] + B));                                 // Computing billboard boundary "b" (in clip space)...
   c = vec4(P_mat*(V_mat*position_SSBO[i] + C));                                 // Computing billboard boundary "c" (in clip space)...
   d = vec4(P_mat*(V_mat*position_SSBO[i] + D));                                 // Computing billboard boundary "d" (in clip space)...
+
+  depth = 2.0f - vec4(P_mat*(V_mat*position_SSBO[i])).z;
+          //vec4(P_mat*(V_mat*vec4(0.0f, 0.0f, 0.0f, 1.0f))).z;
 
   // GENERATING BILLBOARD VERTICES:
   color = color_SSBO[i];                                                        // Setting voxel color...  
