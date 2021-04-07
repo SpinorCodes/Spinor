@@ -18,7 +18,14 @@ void main(void)
   float k2;                                                                     // Smoothness coefficient.
   float k3;                                                                     // Smoothness coefficient.
   float R;                                                                      // Blooming radius.
+  float z;
+  float z_min;
+  float z_max;
+  float alpha;
 
+  z_min = 3.0f;
+  z_max = 0.1f;
+  z = (clamp(depth, z_max, z_min) - z_max)/(z_min - z_max);
   R = length(quad);                                                             // Computing blooming radius.
   k1 = 1.0 - smoothstep(0.0, 0.5, R);                                           // Computing blooming coefficient...
   k2 = 1.0 - smoothstep(0.0, 0.1, R);                                           // Computing smoothing coefficient...
@@ -29,5 +36,7 @@ void main(void)
     discard;                                                                    // Discarding fragment point...
   }
 
-  fragment_color = vec4(1.0f, 0.0f, 0.0f, 1.0f/(depth*depth));        // Setting fragment color...  
+  alpha = clamp(1.0f - z, 0.6f, 1.0f);
+
+  fragment_color = vec4(alpha, 0.0f, 0.0f, alpha);                               // Setting fragment color...  
 }

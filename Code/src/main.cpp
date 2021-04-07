@@ -232,6 +232,8 @@ int main ()
   overlay->addsource (std::string (SHADER_HOME) + std::string (OVERLAY_FRAG), NU_FRAGMENT);         // Setting shader source file...
   overlay->build (nodes);                                                                           // Building shader program...
 
+  std::cout << NU_NEAR_Z_CLIP << " " << NU_FAR_Z_CLIP << std::endl;
+
   ////////////////////////////////////////////////////////////////////////////////////////////////////
   ////////////////////////////////// SETTING OPENCL KERNEL ARGUMENTS /////////////////////////////////
   ////////////////////////////////////////////////////////////////////////////////////////////////////

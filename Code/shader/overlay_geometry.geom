@@ -40,7 +40,7 @@ void main()
 
   float s;                                                                      // Billboard thickness (in clip space).
 
-  s = 0.02;                                                                     // Setting billboard thickness (in clip space)...
+  s = 0.02f;                                                                    // Setting billboard thickness (in clip space)...
 
   // COMPUTING BILLBOARD POSITION:                                                                 
   A = s*vec4(-0.5, +0.5, 0.0, 1.0);                                             // Setting billboard vertex "a" (in clip space)...
@@ -54,7 +54,7 @@ void main()
   c = vec4(P_mat*(V_mat*position_SSBO[i] + C));                                 // Computing billboard boundary "c" (in clip space)...
   d = vec4(P_mat*(V_mat*position_SSBO[i] + D));                                 // Computing billboard boundary "d" (in clip space)...
 
-  depth = 2.0f - vec4(P_mat*(V_mat*position_SSBO[i])).z;
+  depth = vec4(P_mat*(V_mat*position_SSBO[i])).z;
           //vec4(P_mat*(V_mat*vec4(0.0f, 0.0f, 0.0f, 1.0f))).z;
 
   // GENERATING BILLBOARD VERTICES:
