@@ -31,12 +31,14 @@ void main(void)
   k2 = 1.0 - smoothstep(0.0, 0.1, R);                                           // Computing smoothing coefficient...
   k3 = 1.0 - smoothstep(0.2, 0.3, R);                                           // Computing smoothing coefficient...
 
-  if ((abs(quad.x) < 0.4f) && (abs(quad.y) < 0.4f))
+  if ((abs(quad.x) < 0.46f) && (abs(quad.y) < 0.46f) ||
+      ((-0.1f < quad.x) && (quad.x < 0.1f)) ||
+      ((-0.1f < quad.y) && (quad.y < 0.1f)))
   {
     discard;                                                                    // Discarding fragment point...
   }
 
-  alpha = clamp(1.0f - z, 0.6f, 1.0f);
+  alpha = clamp(1.0f - z, 0.6f, 0.9f);
 
-  fragment_color = vec4(alpha, 0.0f, 0.0f, alpha);                               // Setting fragment color...  
+  fragment_color = vec4(alpha, alpha, alpha, alpha);                               // Setting fragment color...  
 }
