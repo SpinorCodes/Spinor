@@ -115,7 +115,7 @@ int main ()
   // SIMULATION VARIABLES:
   float              ds             = 0.1f;                                                         // Cell size [m].
   float              m              = 1.0f;                                                         // Node mass [kg].
-  float              K              = 50.0f;                                                        // Link elastic constant [kg/s^2].
+  float              K              = 100.0f;                                                       // Link elastic constant [kg/s^2].
   float              B              = 1.0f;                                                         // Damping [kg*s*m].
   float              dt_critical    = sqrt (m/K);                                                   // Critical time step [s].
   float              dt_simulation  = 0.2*dt_critical;                                              // Simulation time step [s].
@@ -163,7 +163,7 @@ int main ()
               pow (position->data[i].x, 2) +
               pow (position->data[i].y, 2) +
               pow (position->data[i].z, 2)
-             ) < (sqrt (3)/2.0)*5.0f*ds + EPSILON)
+             ) < (sqrt (3)/2.0)*10.0f*ds + EPSILON)
       )
     {
       particle->data.push_back (i);                                                                 // Setting particle index...
@@ -301,13 +301,13 @@ int main ()
     {
       for(i = 0; i < particle_num->data[0]; i++)
       {
-        px                      = particle_pos->data[i].x;
+        py                      = particle_pos->data[i].y;
         pz                      = particle_pos->data[i].z;
 
-        px_new                  = +cos (0.01f)*px - sin (0.01f)*pz;
-        pz_new                  = +sin (0.01f)*px + cos (0.01f)*pz;
+        py_new                  = +cos (0.01f)*py - sin (0.01f)*pz;
+        pz_new                  = +sin (0.01f)*py + cos (0.01f)*pz;
 
-        particle_pos->data[i].x = px_new;
+        particle_pos->data[i].y = py_new;
         particle_pos->data[i].z = pz_new;
       }
     }
@@ -316,13 +316,13 @@ int main ()
     {
       for(i = 0; i < particle_num->data[0]; i++)
       {
-        px                      = particle_pos->data[i].x;
+        py                      = particle_pos->data[i].y;
         pz                      = particle_pos->data[i].z;
 
-        px_new                  = +cos (0.01f)*px + sin (0.01f)*pz;
-        pz_new                  = -sin (0.01f)*px + cos (0.01f)*pz;
+        py_new                  = +cos (0.01f)*py + sin (0.01f)*pz;
+        pz_new                  = -sin (0.01f)*py + cos (0.01f)*pz;
 
-        particle_pos->data[i].x = px_new;
+        particle_pos->data[i].y = py_new;
         particle_pos->data[i].z = pz_new;
       }
     }
