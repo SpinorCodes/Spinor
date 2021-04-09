@@ -109,10 +109,13 @@ int main ()
   float              py_new;
   float              pz_new;
 
+  // PLOT:
+  bool               plot_overlay   = false;                                                        // Plot overlay flag.
+
   // SIMULATION VARIABLES:
   float              ds             = 0.1f;                                                         // Cell size [m].
   float              m              = 1.0f;                                                         // Node mass [kg].
-  float              K              = 1.0f;                                                         // Link elastic constant [kg/s^2].
+  float              K              = 50.0f;                                                        // Link elastic constant [kg/s^2].
   float              B              = 1.0f;                                                         // Damping [kg*s*m].
   float              dt_critical    = sqrt (m/K);                                                   // Critical time step [s].
   float              dt_simulation  = 0.2*dt_critical;                                              // Simulation time step [s].
@@ -256,25 +259,15 @@ int main ()
     gl->mouse_navigation (ms_orbit_rate, ms_pan_rate, ms_decaytime);                                // Mouse navigation...
     gl->gamepad_navigation (gmp_orbit_rate, gmp_pan_rate, gmp_decaytime, gmp_deadzone);             // Gamepad navigation...
     gl->plot (S);                                                                                   // Plotting shared arguments...
-    gl->plot (overlay);                                                                             // Plotting shared arguments...
+
+    if(plot_overlay)
+    {
+      gl->plot (overlay);                                                                           // Plotting shared arguments...
+    }
+
     gl->refresh ();                                                                                 // Refreshing gl...
 
     if(gl->button_DPAD_LEFT)
-    {
-      for(i = 0; i < particle_num->data[0]; i++)
-      {
-        px                      = particle_pos->data[i].x;
-        py                      = particle_pos->data[i].y;
-
-        px_new                  = +cos (0.01f)*px + sin (0.01f)*py;
-        py_new                  = -sin (0.01f)*px + cos (0.01f)*py;
-
-        particle_pos->data[i].x = px_new;
-        particle_pos->data[i].y = py_new;
-      }
-    }
-
-    if(gl->button_DPAD_RIGHT)
     {
       for(i = 0; i < particle_num->data[0]; i++)
       {
@@ -289,6 +282,21 @@ int main ()
       }
     }
 
+    if(gl->button_DPAD_RIGHT)
+    {
+      for(i = 0; i < particle_num->data[0]; i++)
+      {
+        px                      = particle_pos->data[i].x;
+        py                      = particle_pos->data[i].y;
+
+        px_new                  = +cos (0.01f)*px + sin (0.01f)*py;
+        py_new                  = -sin (0.01f)*px + cos (0.01f)*py;
+
+        particle_pos->data[i].x = px_new;
+        particle_pos->data[i].y = py_new;
+      }
+    }
+
     if(gl->button_DPAD_DOWN)
     {
       for(i = 0; i < particle_num->data[0]; i++)
@@ -296,8 +304,8 @@ int main ()
         px                      = particle_pos->data[i].x;
         pz                      = particle_pos->data[i].z;
 
-        px_new                  = +cos (0.01f)*px + sin (0.01f)*pz;
-        pz_new                  = -sin (0.01f)*px + cos (0.01f)*pz;
+        px_new                  = +cos (0.01f)*px - sin (0.01f)*pz;
+        pz_new                  = +sin (0.01f)*px + cos (0.01f)*pz;
 
         particle_pos->data[i].x = px_new;
         particle_pos->data[i].z = pz_new;
@@ -311,8 +319,8 @@ int main ()
         px                      = particle_pos->data[i].x;
         pz                      = particle_pos->data[i].z;
 
-        px_new                  = +cos (0.01f)*px - sin (0.01f)*pz;
-        pz_new                  = +sin (0.01f)*px + cos (0.01f)*pz;
+        px_new                  = +cos (0.01f)*px + sin (0.01f)*pz;
+        pz_new                  = -sin (0.01f)*px + cos (0.01f)*pz;
 
         particle_pos->data[i].x = px_new;
         particle_pos->data[i].z = pz_new;
@@ -353,6 +361,11 @@ int main ()
         particle_pos->data[i].y = py_new;
         particle_pos->data[i].z = pz_new;
       }
+    }
+
+    if(gl->button_TRIANGLE)
+    {
+      plot_overlay = !plot_overlay;
     }
 
     if(gl->button_CROSS)
