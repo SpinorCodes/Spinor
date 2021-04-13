@@ -114,7 +114,7 @@ int main ()
 
   // SIMULATION VARIABLES:
   float              ds             = 0.1f;                                                         // Cell size [m].
-  float              m              = 1.0f;                                                         // Node mass [kg].
+  float              m              = 0.01f;                                                        // Node mass [kg].
   float              K              = 100.0f;                                                       // Link elastic constant [kg/s^2].
   float              B              = 1.0f;                                                         // Damping [kg*s*m].
   float              R              = 10;                                                           // Particle's radius [#cells].
@@ -164,7 +164,7 @@ int main ()
               pow (position->data[i].x, 2) +
               pow (position->data[i].y, 2) +
               pow (position->data[i].z, 2)
-             ) < (sqrt (3)/2.0)*R*ds + EPSILON)
+             ) < (sqrt (3.0f)/2.0f)*R*ds + EPSILON)
       )
     {
       particle->data.push_back (i);                                                                 // Setting particle index...
@@ -181,7 +181,7 @@ int main ()
   for(i = 0; i < neighbours; i++)
   {
     // Building 3D isotropic 18-node cubic MSM:
-    if((resting->data[i] < (sqrt (2)/2.0)*ds + EPSILON))
+    if(resting->data[i] < ((sqrt (2.0f)/2.0f)*ds + EPSILON))
     {
       stiffness->data.push_back (K);                                                                // Setting link stiffness...
     }
