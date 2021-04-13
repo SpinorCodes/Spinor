@@ -36,7 +36,7 @@
 #define UTILITIES     "utilities.cl"                                                                // OpenCL utilities source.
 #define MESH          "spinor.msh"                                                                  // GMSH mesh.
 
-#define EPSILON       1.0f*0.005f                                                                   // Float epsilon for mesh.
+#define EPSILON       0.005f                                                                        // Float epsilon for mesh.
 
 // INCLUDES:
 #include "nu.hpp"                                                                                   // Neutrino header file.
@@ -117,6 +117,7 @@ int main ()
   float              m              = 1.0f;                                                         // Node mass [kg].
   float              K              = 100.0f;                                                       // Link elastic constant [kg/s^2].
   float              B              = 1.0f;                                                         // Damping [kg*s*m].
+  float              R              = 10;                                                           // Particle's radius [#cells].
   float              dt_critical    = sqrt (m/K);                                                   // Critical time step [s].
   float              dt_simulation  = 0.2*dt_critical;                                              // Simulation time step [s].
 
@@ -163,7 +164,7 @@ int main ()
               pow (position->data[i].x, 2) +
               pow (position->data[i].y, 2) +
               pow (position->data[i].z, 2)
-             ) < (sqrt (3)/2.0)*10.0f*ds + EPSILON)
+             ) < (sqrt (3)/2.0)*R*ds + EPSILON)
       )
     {
       particle->data.push_back (i);                                                                 // Setting particle index...
@@ -179,15 +180,24 @@ int main ()
   // SETTING NEUTRINO ARRAYS ("neighbours" depending):
   for(i = 0; i < neighbours; i++)
   {
-    stiffness->data.push_back (K);                                                                  // Setting link stiffness...
-
-    if(resting->data[i] > (ds + EPSILON))
+    // Building 3D isotropic 18-node cubic MSM:
+    if((resting->data[i] < (sqrt (2)/2.0)*ds + EPSILON))
     {
-      color->data.push_back ({0.0f, 0.0f, 0.0f, 0.0f});                                             // Setting color...
+      stiffness->data.push_back (K);                                                                // Setting link stiffness...
     }
     else
     {
+      stiffness->data.push_back (K/200000.0f);                                                      // Setting link stiffness...
+    }
+
+    // Showing only [100] neighbours:
+    if(resting->data[i] < (ds + EPSILON))
+    {
       color->data.push_back ({0.0f, 1.0f, 0.0f, 0.3f});                                             // Setting color...
+    }
+    else
+    {
+      color->data.push_back ({0.0f, 0.0f, 0.0f, 0.0f});                                             // Setting color...
     }
   }
 
