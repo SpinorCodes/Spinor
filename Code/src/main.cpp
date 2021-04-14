@@ -115,9 +115,9 @@ int main ()
   // SIMULATION VARIABLES:
   float              ds             = 0.1f;                                                         // Cell size [m].
   float              m              = 0.01f;                                                        // Node mass [kg].
-  float              K              = 100.0f;                                                       // Link elastic constant [kg/s^2].
+  float              K              = 10000.0f;                                                     // Link elastic constant [kg/s^2].
   float              B              = 1.0f;                                                         // Damping [kg*s*m].
-  float              R              = 10;                                                           // Particle's radius [#cells].
+  float              R              = 3;                                                            // Particle's radius [#cells].
   float              dt_critical    = sqrt (m/K);                                                   // Critical time step [s].
   float              dt_simulation  = 0.2*dt_critical;                                              // Simulation time step [s].
 
@@ -164,30 +164,30 @@ int main ()
               pow (position->data[i].x, 2) +
               pow (position->data[i].y, 2) +
               pow (position->data[i].z, 2)
-             ) < (sqrt (3.0f)/2.0f)*R*ds + EPSILON)
+             ) < (sqrt (3.0f)*ds*R + EPSILON)
+       )
       )
     {
       particle->data.push_back (i);                                                                 // Setting particle index...
       particle_pos->data.push_back (position->data[i]);                                             // Setting initial particle's position...
       freedom->data[i] = (0);                                                                       // Resetting freedom flag...
-      std::cout << "Found particle: i = " << i << std::endl;
+      //std::cout << "Found particle: i = " << i << std::endl;
     }
   }
 
   particle_num->data.push_back (particle->data.size ());
-  std::cout << "Particle num = " << particle_num->data[0] << std::endl;
 
   // SETTING NEUTRINO ARRAYS ("neighbours" depending):
   for(i = 0; i < neighbours; i++)
   {
     // Building 3D isotropic 18-node cubic MSM:
-    if(resting->data[i] < ((sqrt (2.0f)/2.0f)*ds + EPSILON))
+    if(resting->data[i] < (sqrt (2.0f)*ds + EPSILON))
     {
       stiffness->data.push_back (K);                                                                // Setting link stiffness...
     }
     else
     {
-      stiffness->data.push_back (K/200000.0f);                                                      // Setting link stiffness...
+      stiffness->data.push_back (0.0f);                                                             // Setting link stiffness...
     }
 
     // Showing only [100] neighbours:
@@ -214,8 +214,6 @@ int main ()
     spinor->process (boundary[i], 2, NU_MSH_PNT);                                                   // Processing mesh...
     point       = spinor->node;                                                                     // Getting nodes on border...
     point_nodes = point.size ();                                                                    // Getting the number of nodes on border...
-
-    std::cout << "surface nodes = " << point_nodes << std::endl;
 
     for(j = 0; j < point_nodes; j++)
     {
@@ -244,8 +242,6 @@ int main ()
   overlay->addsource (std::string (SHADER_HOME) + std::string (OVERLAY_GEOM), NU_GEOMETRY);         // Setting shader source file...
   overlay->addsource (std::string (SHADER_HOME) + std::string (OVERLAY_FRAG), NU_FRAGMENT);         // Setting shader source file...
   overlay->build (nodes);                                                                           // Building shader program...
-
-  std::cout << NU_NEAR_Z_CLIP << " " << NU_FAR_Z_CLIP << std::endl;
 
   ////////////////////////////////////////////////////////////////////////////////////////////////////
   ////////////////////////////////// SETTING OPENCL KERNEL ARGUMENTS /////////////////////////////////
