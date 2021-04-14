@@ -183,14 +183,14 @@ int main ()
     // Building 3D isotropic 18-node cubic MSM:
     if(resting->data[i] < (sqrt (2.0f)*ds + EPSILON))
     {
-      stiffness->data.push_back (K);                                                                // Setting link stiffness...
+      stiffness->data.push_back (K);                                                                // Setting 1st and 2nd neighbour link stiffness...
     }
     else
     {
-      stiffness->data.push_back (0.0f);                                                             // Setting link stiffness...
+      stiffness->data.push_back (0.0f);                                                             // Setting 3rd neighbour link stiffness...
     }
 
-    // Showing only [100] neighbours:
+    // Showing only 1st neighbours:
     if(resting->data[i] < (ds + EPSILON))
     {
       color->data.push_back ({0.0f, 1.0f, 0.0f, 0.3f});                                             // Setting color...
