@@ -53,6 +53,10 @@ __kernel void thekernel(__global float4*    color,                              
   float4        Fv_est            = (float4)(0.0f, 0.0f, 0.0f, 1.0f);           // Central node viscous force (estimation).
   float4        F                 = (float4)(0.0f, 0.0f, 0.0f, 1.0f);           // Central node total force.
   float4        F_new             = (float4)(0.0f, 0.0f, 0.0f, 1.0f);           // Central node total force (new).
+  int           b                 = 0;                                          // Number of MSM's neighbours.
+  float         q                 = 0.1f;                                       // 0.5 * "dissipative momentum flow"/"direct momentum flow".
+  float4        Jacc              = (float4)(0.0f, 0.0f, 0.0f, 1.0f);           // Radiated momentum.
+  float4        Fd                = (float4)(0.0f, 0.0f, 0.0f, 1.0f);           // Central node dissipative force.
   float4        nearest           = (float4)(0.0f, 0.0f, 0.0f, 1.0f);           // Neighbour node position.
   float4        link              = (float4)(0.0f, 0.0f, 0.0f, 1.0f);           // Neighbour link.
   float4        D                 = (float4)(0.0f, 0.0f, 0.0f, 1.0f);           // Neighbour displacement.
@@ -98,12 +102,25 @@ __kernel void thekernel(__global float4*    color,                              
     }
 
     Fe += K*D;                                                                  // Building up elastic force on central node...
+    Jacc += -q*R*K*D;                                                           // Building up radiated momentum from central node...
+
+    if(K == 0.0f)
+    {
+      b++;                                                                      // Counting MSM's neighbours...
+    }
+  }
+
+  // COMPUTING DISPERSIVE FORCE:
+  for (j = j_min; j < j_max; j++)
+  {
+    R = resting[j];                                                             // Getting neighbour link resting length...
+    Fd += Jacc/(b*R);                                                           // Building up dissipative force on central node...
   }
 
   Fv = -B*v_int;                                                                // Computing node viscous force...
 
   // COMPUTING TOTAL FORCE:
-  F  = Fe + Fv;                                                                 // Total force applied to the particle [N]...
+  F  = Fe + Fv + Fd;                                                            // Total force applied to the particle [N]...
 
   // COMPUTING NEW ACCELERATION ESTIMATION:
   a_est  = F/m;                                                                 // Computing acceleration [m/s^2]...
@@ -115,7 +132,7 @@ __kernel void thekernel(__global float4*    color,                              
   Fv_est = -B*v_est;                                                            // Computing node viscous force...
 
   // COMPUTING NEW TOTAL FORCE:
-  F_new = Fe + Fv_est;                                                          // Computing total node force...
+  F_new = Fe + Fv_est + Fd;                                                     // Computing total node force...
 
   // COMPUTING NEW ACCELERATION:
   a_new = F_new/m;                                                              // Computing acceleration...
