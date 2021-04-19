@@ -114,10 +114,10 @@ int main ()
   bool               plot_overlay   = false;                                                        // Plot overlay flag.
 
   // SIMULATION VARIABLES:
-  float              rho            = 10.0f;                                                        // Mass density [kg/m^3].
-  float              E              = 382842.0f;                                                    // Young's modulus [Pa];
-  float              nu             = 0.25f;                                                        // Poisson's ratio [];
-  float              B              = 1.0f;                                                         // Damping [kg*s*m].
+  float              rho            = 2000.0f;                                                      // Mass density [kg/m^3].
+  float              E              = 1000000.0f;                                                   // Young's modulus [Pa];
+  float              nu             = -0.5f;                                                        // Poisson's ratio [];
+  float              B              = 10.0f;                                                        // Damping [kg*s*m].
   float              R              = 3;                                                            // Particle's radius [#cells].
 
   float              ds;                                                                            // Cell size [m].
