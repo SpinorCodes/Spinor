@@ -86,6 +86,9 @@ int main ()
   nu::int1*          particle_num   = new nu::int1 (16);                                            // Particle number.
   nu::float4*        particle_pos   = new nu::float4 (17);                                          // Particle position.
   nu::float1*        momentum_ratio = new nu::float1 (18);                                          // Momentum ratio [].
+  nu::int1*          wall           = new nu::int1 (19);                                            // Wall.
+  nu::int1*          wall_num       = new nu::int1 (20);                                            // Wall nodes number.
+  nu::float4*        wall_pos       = new nu::float4 (21);                                          // Wall nodes position.
 
   // MESH:
   nu::mesh*          spinor         = new nu::mesh (std::string (GMSH_HOME) + std::string (MESH));  // Mesh cloth.
@@ -254,7 +257,22 @@ int main ()
     {
       freedom->data[point[j]] = 0;                                                                  // Resetting freedom flag...
     }
+
+    point.clear ();
   }
+
+  spinor->process (boundary[0], 2, NU_MSH_PNT);                                                     // Processing mesh...
+  point       = spinor->node;                                                                       // Getting nodes on border...
+  point_nodes = point.size ();                                                                      // Getting the number of nodes on border...
+
+  for(j = 0; j < point_nodes; j++)
+  {
+    wall->data.push_back (j);                                                                       // Setting particle index...
+    wall_pos->data.push_back (position->data[j]);                                                   // Setting initial particle's position...
+  }
+
+  wall_num->data.push_back (wall->data.size ());
+
 
   ////////////////////////////////////////////////////////////////////////////////////////////////////
   //////////////////////////////////// OPENCL KERNELS INITIALIZATION /////////////////////////////////
@@ -290,6 +308,7 @@ int main ()
   {
     cl->get_tic ();                                                                                 // Getting "tic" [us]...
     cl->write (17);                                                                                 // Writing particle's position...
+    cl->write (21);                                                                                 // Writing wall position...
     cl->acquire ();                                                                                 // Acquiring variables...
     cl->execute (K1, NU_WAIT);                                                                      // Executing OpenCL kernel...
     cl->execute (K2, NU_WAIT);                                                                      // Executing OpenCL kernel...
@@ -401,6 +420,26 @@ int main ()
         particle_pos->data[i].x = px_new;
         particle_pos->data[i].y = py_new;
         particle_pos->data[i].z = pz_new;
+      }
+    }
+
+    if(gl->button_SQUARE)
+    {
+      for(i = 0; i < wall_num->data[0]; i++)
+      {
+        pz                  = wall_pos->data[i].z;
+        pz_new              = pz + ds/10.0f;
+        wall_pos->data[i].z = pz_new;
+      }
+    }
+
+    if(gl->button_CIRCLE)
+    {
+      for(i = 0; i < wall_num->data[0]; i++)
+      {
+        pz                  = wall_pos->data[i].z;
+        pz_new              = pz - ds/10.0f;
+        wall_pos->data[i].z = pz_new;
       }
     }
 

@@ -21,7 +21,10 @@ __kernel void thekernel(__global float4*    color,                              
                         __global int*       particle,                                 // Particle.
                         __global int*       particle_num,                             // Particle number.
                         __global float4*    particle_pos,                             // Particle's position.
-                        __global float*     momentum_ratio)                           // Dissipative to direct momentum flow ratio.
+                        __global float*     momentum_ratio,                           // Dissipative to direct momentum flow ratio.
+                        __global int*       wall,                                     // Particle.
+                        __global int*       wall_num,                                 // Particle number.
+                        __global float4*    wall_pos)                                 // Particle's position.
 {
   //////////////////////////////////////////////////////////////////////////////////////
   //////////////////////////////////////// INDICES /////////////////////////////////////
@@ -39,6 +42,7 @@ __kernel void thekernel(__global float4*    color,                              
   int           fr                = freedom[i];                                       // Central node freedom flag.
   float         dt                = dt_simulation[0];                                 // Simulation time step [s].
   int           p_num             = particle_num[0];                                  // Particle number.
+  int           w_num             = wall_num[0];                                      // Particle number.
 
   // APPLYING FREEDOM CONSTRAINTS:
   if (fr == 0)
@@ -52,6 +56,14 @@ __kernel void thekernel(__global float4*    color,                              
     if(i == particle[j])
     {
       p = particle_pos[j];
+    }
+  }
+
+  for(j = 0; j < w_num; j++)
+  {
+    if(i == wall[j])
+    {
+      p = wall_pos[j];
     }
   }
 

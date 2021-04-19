@@ -21,7 +21,10 @@ __kernel void thekernel(__global float4*    color,                              
                         __global int*       particle,                           // Particle.
                         __global int*       particle_num,                       // Particle number.
                         __global float4*    particle_pos,                       // Particle's position.
-                        __global float*     momentum_ratio)                     // Dissipative to direct momentum flow ratio.
+                        __global float*     momentum_ratio,                     // Dissipative to direct momentum flow ratio.
+                        __global int*       wall,                               // Particle.
+                        __global int*       wall_num,                           // Particle number.
+                        __global float4*    wall_pos)                           // Particle's position.
 {
   ////////////////////////////////////////////////////////////////////////////////
   //////////////////////////////////// INDEXES ///////////////////////////////////
