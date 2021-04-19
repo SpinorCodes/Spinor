@@ -85,6 +85,7 @@ int main ()
   nu::int1*          particle       = new nu::int1 (15);                                            // Particle.
   nu::int1*          particle_num   = new nu::int1 (16);                                            // Particle number.
   nu::float4*        particle_pos   = new nu::float4 (17);                                          // Particle position.
+  nu::float1*        momentum_ratio = new nu::float1 (18);                                          // Momentum ratio [].
 
   // MESH:
   nu::mesh*          spinor         = new nu::mesh (std::string (GMSH_HOME) + std::string (MESH));  // Mesh cloth.
@@ -172,6 +173,7 @@ int main ()
   // SETTING NEUTRINO ARRAYS (parameters):
   friction->data.push_back (B);                                                                     // Setting friction...
   dt->data.push_back (dt_simulation);                                                               // Setting time step...
+  momentum_ratio->data.push_back (q);                                                               // Setting dissipative to direct momentum flow ratio...
 
   // SETTING NEUTRINO ARRAYS ("nodes" depending):
   for(i = 0; i < nodes; i++)

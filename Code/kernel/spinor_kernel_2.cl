@@ -20,7 +20,8 @@ __kernel void thekernel(__global float4*    color,                              
                         __global float*     dt_simulation,                      // Simulation time step.
                         __global int*       particle,                           // Particle.
                         __global int*       particle_num,                       // Particle number.
-                        __global float4*    particle_pos)                       // Paritcle's position.
+                        __global float4*    particle_pos,                       // Particle's position.
+                        __global float*     momentum_ratio)                     // Dissipative to direct momentum flow ratio.
 {
   ////////////////////////////////////////////////////////////////////////////////
   //////////////////////////////////// INDEXES ///////////////////////////////////
@@ -54,7 +55,7 @@ __kernel void thekernel(__global float4*    color,                              
   float4        F                 = (float4)(0.0f, 0.0f, 0.0f, 1.0f);           // Central node total force.
   float4        F_new             = (float4)(0.0f, 0.0f, 0.0f, 1.0f);           // Central node total force (new).
   int           b                 = 0;                                          // Number of MSM's neighbours.
-  float         q                 = 0.1f;                                       // 0.5 * "dissipative momentum flow"/"direct momentum flow".
+  float         q                 = momentum_ratio[0];                          // Dissipative to direct momentum flow ratio.
   float4        Jacc              = (float4)(0.0f, 0.0f, 0.0f, 1.0f);           // Radiated momentum.
   float4        Fd                = (float4)(0.0f, 0.0f, 0.0f, 1.0f);           // Central node dissipative force.
   float4        nearest           = (float4)(0.0f, 0.0f, 0.0f, 1.0f);           // Neighbour node position.

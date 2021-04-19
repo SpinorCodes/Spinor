@@ -20,7 +20,8 @@ __kernel void thekernel(__global float4*    color,                              
                         __global float*     dt_simulation,                            // Simulation time step.
                         __global int*       particle,                                 // Particle.
                         __global int*       particle_num,                             // Particle number.
-                        __global float4*    particle_pos)                             // Paritcle's position.
+                        __global float4*    particle_pos,                             // Particle's position.
+                        __global float*     momentum_ratio)                           // Dissipative to direct momentum flow ratio.
 {
   //////////////////////////////////////////////////////////////////////////////////////
   //////////////////////////////////////// INDICES /////////////////////////////////////
