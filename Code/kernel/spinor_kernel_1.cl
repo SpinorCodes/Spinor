@@ -50,7 +50,7 @@ __kernel void thekernel(__global float4*    color,                              
     v = (float4)(0.0f, 0.0f, 0.0f, 1.0f);                                             // Constraining velocity...
     a = (float4)(0.0f, 0.0f, 0.0f, 1.0f);                                             // Constraining acceleration...
   }
-
+/*
   for(j = 0; j < p_num; j++)
   {
     if(i == particle[j])
@@ -58,7 +58,7 @@ __kernel void thekernel(__global float4*    color,                              
       p = particle_pos[j];
     }
   }
-
+*/
   for(j = 0; j < w_num; j++)
   {
     if(i == wall[j])
