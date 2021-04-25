@@ -16,7 +16,6 @@ __kernel void thekernel(__global float4*    color,                              
                         __global int*       central,                                  // Central.
                         __global int*       neighbour,                                // Neighbour.
                         __global int*       offset,                                   // Offset.
-                        __global int*       freedom,                                  // Freedom flag.
                         __global float*     dt_simulation,                            // Simulation time step.
                         __global int*       particle,                                 // Particle.
                         __global int*       particle_num,                             // Particle number.
@@ -35,11 +34,11 @@ __kernel void thekernel(__global float4*    color,                              
   //////////////////////////////////////////////////////////////////////////////////////
   //////////////////////////////////// CELL VARIABLES //////////////////////////////////
   //////////////////////////////////////////////////////////////////////////////////////
-  float4        p                 = position[i];                                      // Central node position.
-  float4        v                 = velocity[i];                                      // Central node velocity.
-  float4        a                 = acceleration[i];                                  // Central node acceleration.
-  float4        p_new             = (float4)(0.0f, 0.0f, 0.0f, 1.0f);                 // Central node position. 
-  int           fr                = freedom[i];                                       // Central node freedom flag.
+  float3        p                 = position[i].xyz;                                  // Central node position.
+  float3        v                 = velocity[i].xyz;                                      // Central node velocity.
+  float3        a                 = acceleration[i].xyz;                                  // Central node acceleration.
+  float3        p_new             = (float3)(0.0f, 0.0f, 0.0f);                 // Central node position. 
+  float         fr                = position[i].w;                                       // Central node freedom flag.
   float         dt                = dt_simulation[0];                                 // Simulation time step [s].
   int           p_num             = particle_num[0];                                  // Particle number.
   int           w_num             = wall_num[0];                                      // Particle number.
@@ -47,8 +46,8 @@ __kernel void thekernel(__global float4*    color,                              
   // APPLYING FREEDOM CONSTRAINTS:
   if (fr == 0)
   {
-    v = (float4)(0.0f, 0.0f, 0.0f, 1.0f);                                             // Constraining velocity...
-    a = (float4)(0.0f, 0.0f, 0.0f, 1.0f);                                             // Constraining acceleration...
+    v = (float3)(0.0f, 0.0f, 0.0f);                                             // Constraining velocity...
+    a = (float3)(0.0f, 0.0f, 0.0f);                                             // Constraining acceleration...
   }
 /*
   for(j = 0; j < p_num; j++)
@@ -63,7 +62,7 @@ __kernel void thekernel(__global float4*    color,                              
   {
     if(i == wall[j])
     {
-      p = wall_pos[j];
+      p = wall_pos[j].xyz;
     }
   }
 
@@ -71,10 +70,6 @@ __kernel void thekernel(__global float4*    color,                              
   p_new = p + v*dt + 0.5f*a*dt*dt;                                                    // Computing Taylor's approximation...
         
   // UPDATING INTERMEDIATE POSITION:
-  position_int[i] = p_new;                                                            // Updating intermediate position...
-  velocity_int[i] = v + a*dt;                                                         // Updating intermediate velocity...
-
-  // FIXING PROJECTIVE SPACE:
-  position_int[i].w = 1.0f;                                                           // Adjusting projective space...
-  velocity_int[i].w = 1.0f;                                                           // Adjusting projective space...              
+  position_int[i].xyz = p_new;                                                            // Updating intermediate position...
+  velocity_int[i].xyz = v + a*dt;                                                         // Updating intermediate velocity...           
 }
