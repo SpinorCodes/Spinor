@@ -67,27 +67,28 @@ int main ()
   nu::opencl*        cl             = new nu::opencl (NU_GPU);                                      // OpenCL context.
   nu::kernel*        K1             = new nu::kernel ();                                            // OpenCL kernel array.
   nu::kernel*        K2             = new nu::kernel ();                                            // OpenCL kernel array.
-  nu::float4*        color          = new nu::float4 (0);                                           // Color [].
-  nu::float4*        position       = new nu::float4 (1);                                           // Position [m].
-  nu::float4*        velocity       = new nu::float4 (2);                                           // Velocity [m/s].
-  nu::float4*        acceleration   = new nu::float4 (3);                                           // Acceleration [m/s^2].
-  nu::float4*        position_int   = new nu::float4 (4);                                           // Position (intermediate) [m].
+
+  nu::float4*        position       = new nu::float4 (1);                                           // vec4(position.xyz [m], freedom []).
+  nu::float4*        velocity       = new nu::float4 (2);                                           // vec4(velocity.xyz [m/s], friction [N*s/m]).
+  nu::float4*        acceleration   = new nu::float4 (3);                                           // vec4(acceleration.xyz [m/s^2], mass [kg]).
+  nu::float4*        position_int   = new nu::float4 (4);                                           // vec4(position (intermediate) [m], momentum ratio []).
   nu::float4*        velocity_int   = new nu::float4 (5);                                           // Velocity (intermediate) [m/s].
+
+  nu::float4*        color          = new nu::float4 (0);                                           // vec4(color.rgb [], alpha []).
   nu::float1*        stiffness      = new nu::float1 (6);                                           // Stiffness.
   nu::float1*        resting        = new nu::float1 (7);                                           // Resting.
-  nu::float1*        friction       = new nu::float1 (8);                                           // Friction.
-  nu::float1*        mass           = new nu::float1 (9);                                           // Mass.
   nu::int1*          central        = new nu::int1 (10);                                            // Central nodes.
   nu::int1*          neighbour      = new nu::int1 (11);                                            // Neighbour.
   nu::int1*          offset         = new nu::int1 (12);                                            // Offset.
-  nu::float1*        dt             = new nu::float1 (13);                                          // Time step [s].
+
   nu::int1*          particle       = new nu::int1 (14);                                            // Particle.
   nu::int1*          particle_num   = new nu::int1 (15);                                            // Particle number.
   nu::float4*        particle_pos   = new nu::float4 (16);                                          // Particle position.
-  nu::float1*        momentum_ratio = new nu::float1 (17);                                          // Momentum ratio [].
   nu::int1*          wall           = new nu::int1 (18);                                            // Wall.
   nu::int1*          wall_num       = new nu::int1 (19);                                            // Wall nodes number.
   nu::float4*        wall_pos       = new nu::float4 (20);                                          // Wall nodes position.
+
+  nu::float1*        dt             = new nu::float1 (13);                                          // Time step [s].
 
   // MESH:
   nu::mesh*          spinor         = new nu::mesh (std::string (GMSH_HOME) + std::string (MESH));  // Mesh cloth.
