@@ -1,167 +1,83 @@
 /// @file     spinor_kernel_2.cl
 /// @author   Erik ZORZIN
 /// @date     16JAN2021
-/// @brief    Does nothing.
-/// @details  The nothing:
-__kernel void thekernel(__global float4*    color,                              // Color.
-                        __global float4*    position,                           // Position.
-                        __global float4*    position_int,                       // Position (intermediate).
-                        __global float4*    velocity,                           // Velocity.
-                        __global float4*    velocity_int,                       // Velocity (intermediate).
-                        __global float4*    acceleration,                       // Acceleration.
-                        __global float*     stiffness,                          // Stiffness.
-                        __global float*     resting,                            // Resting distance.
-                        __global float*     friction,                           // Friction.
-                        __global float*     mass,                               // Mass.
-                        __global int*       central,                            // Central.
-                        __global int*       neighbour,                          // Neighbour index.
-                        __global int*       offset,                             // Offset.
-                        __global float*     dt_simulation,                      // Simulation time step.
-                        __global int*       particle,                           // Particle.
-                        __global int*       particle_num,                       // Particle number.
-                        __global float4*    particle_pos,                       // Particle's position.
-                        __global float*     momentum_ratio,                     // Dissipative to direct momentum flow ratio.
-                        __global int*       wall,                               // Particle.
-                        __global int*       wall_num,                           // Particle number.
-                        __global float4*    wall_pos)                           // Particle's position.
+/// @brief    2nd kernel.
+/// @details  Computes Verlet's integration.
+__kernel void thekernel(__global float4*    position,                                 // vec4(position.xyz [m], freedom []).
+                        __global float4*    position_int,                             // vec4(position (intermediate) [m], momentum ratio []).
+                        __global float4*    velocity,                                 // vec4(velocity.xyz [m/s], friction [N*s/m]).
+                        __global float4*    velocity_int,                             // vec4(velocity (intermediate) [m/s], number of 1st + 2nd nearest neighbours []).
+                        __global float4*    acceleration,                             // vec4(acceleration.xyz [m/s^2], mass [kg]).
+                        __global float4*    color,                                    // vec4(color.xyz [], alpha []).
+                        __global float*     stiffness,                                // Stiffness.
+                        __global float*     resting,                                  // Resting distance.
+                        __global int*       central,                                  // Central.
+                        __global int*       neighbour,                                // Neighbour.
+                        __global int*       offset,                                   // Offset.
+                        __global int*       spinor,                                   // Spinor.
+                        __global int*       spinor_num,                               // Spinor cells number.
+                        __global float4*    spinor_pos,                               // Spinor cells position.
+                        __global int*       wall,                                     // Wall.
+                        __global int*       wall_num,                                 // Wall cells number.
+                        __global float4*    wall_pos,                                 // Wall cells posistion.
+                        __global float*     dispersion,                               // Dispersion fraction.
+                        __global float*     dt_simulation                             // Simulation time step.
+                        )   
 {
-  ////////////////////////////////////////////////////////////////////////////////
-  //////////////////////////////////// INDEXES ///////////////////////////////////
-  ////////////////////////////////////////////////////////////////////////////////
-  unsigned int i = get_global_id(0);                                            // Global index [#].
-  unsigned int j = 0;                                                           // Neighbour stride index.
-  unsigned int j_min = 0;                                                       // Neighbour stride minimun index.
-  unsigned int j_max = offset[i];                                               // Neighbour stride maximum index.
-  unsigned int k = 0;                                                           // Neighbour tuple index.
-  unsigned int n = central[j_max - 1];                                          // Node index.
+  //////////////////////////////////////////////////////////////////////////////////////
+  //////////////////////////////////////// INDEXES /////////////////////////////////////
+  //////////////////////////////////////////////////////////////////////////////////////
+  unsigned int i = get_global_id(0);                                                  // Global index [#].
+  unsigned int j = 0;                                                                 // Neighbour stride index.
+  unsigned int j_min = 0;                                                             // Neighbour stride minimun index.
+  unsigned int j_max = offset[i];                                                     // Neighbour stride maximum index.
+  unsigned int k = 0;                                                                 // Neighbour tuple index.
+  unsigned int n = central[j_max - 1];                                                // Central node index.
 
-  ////////////////////////////////////////////////////////////////////////////////
-  ////////////////////////////////// CELL VARIABLES //////////////////////////////
-  ////////////////////////////////////////////////////////////////////////////////
-  float4        c;                                                              // Central node color.
-  float3        v                 = velocity[n].xyz;                                // Central node velocity.
-  float3        a                 = acceleration[n].xyz;                            // Central node acceleration.
-  float3        p_int             = position_int[n].xyz;                            // Central node position (intermediate).
-  float3        v_int             = velocity_int[n].xyz;                            // Central node velocity (intermediate).
-  float3        p_new             = (float3)(0.0f, 0.0f, 0.0f);           // Central node position (new).
-  float3        v_new             = (float3)(0.0f, 0.0f, 0.0f);           // Central node velocity (new).
-  float3        a_new             = (float3)(0.0f, 0.0f, 0.0f);           // Central node acceleration (new).
-  float3        v_est             = (float3)(0.0f, 0.0f, 0.0f);           // Central node velocity (estimation).
-  float3        a_est             = (float3)(0.0f, 0.0f, 0.0f);           // Central node acceleration (estimation).
-  float         m                 = mass[n];                                    // Central node mass.
-  float         B                 = friction[0];                                // Central node friction.
-  float         fr                = position[n].w;                                 // Central node freedom flag.
-  float3        Fe                = (float3)(0.0f, 0.0f, 0.0f);           // Central node elastic force.  
-  float3        Fv                = (float3)(0.0f, 0.0f, 0.0f);           // Central node viscous force.
-  float3        Fv_est            = (float3)(0.0f, 0.0f, 0.0f);           // Central node viscous force (estimation).
-  float3        F                 = (float3)(0.0f, 0.0f, 0.0f);           // Central node total force.
-  float3        F_new             = (float3)(0.0f, 0.0f, 0.0f);           // Central node total force (new).
-  int           b                 = 0;                                          // Number of MSM's neighbours.
-  float         q                 = momentum_ratio[0];                          // Dissipative to direct momentum flow ratio.
-  float3        Jacc              = (float3)(0.0f, 0.0f, 0.0f);           // Radiated momentum.
-  float3        Fd                = (float3)(0.0f, 0.0f, 0.0f);           // Central node dissipative force.
-  float3        conjugate         = (float3)(0.0f, 0.0f, 0.0f);           // Neighbour node position.
-  float3        link              = (float3)(0.0f, 0.0f, 0.0f);           // Neighbour link.
-  float3        D                 = (float3)(0.0f, 0.0f, 0.0f);           // Neighbour displacement.
-  float         R                 = 0.0f;                                       // Neighbour link resting length.
-  float         K                 = 0.0f;                                       // Neighbour link stiffness.
-  float         S                 = 0.0f;                                       // Neighbour link strain.
-  float         L                 = 0.0f;                                       // Neighbour link length.
-  float         dt                = dt_simulation[0];                           // Simulation time step [s].
+  //////////////////////////////////////////////////////////////////////////////////////
+  ///////////////////////////////////// CELL VARIABLES /////////////////////////////////
+  //////////////////////////////////////////////////////////////////////////////////////
+  float3        p_int             = position_int[n].xyz;                              // Central node position (intermediate). 
+  float3        mate              = (float3)(0.0f, 0.0f, 0.0f);                       // Neighbour node position.
+  float3        link              = (float3)(0.0f, 0.0f, 0.0f);                       // Neighbour link.
+  float         L                 = 0.0f;                                             // Neighbour link length.
+  float         R                 = 0.0f;                                             // Neighbour link resting length.
+  float         S                 = 0.0f;                                             // Neighbour link strain.
+  float         K                 = 0.0f;                                             // Neighbour link stiffness.
+  float         D                 = dispersion[0];                                    // Dispersion.
+  float         Fspring           = 0.0f;                                             // Spring force (scalar).  
+  float         Jacc              = 0.0f;                                             // Central node radiated energy.
+  float         b                 = 0.0f;                                             // Number of 1st + 2nd nearest neighbours.
 
   // COMPUTING STRIDE MINIMUM INDEX:
   if (i == 0)
   {
-    j_min = 0;                                                                  // Setting stride minimum (first stride)...
+    j_min = 0;                                                                        // Setting stride minimum (first stride)...
   }
   else
   {
-    j_min = offset[i - 1];                                                      // Setting stride minimum (all others)...
+    j_min = offset[i - 1];                                                            // Setting stride minimum (all others)...
   }
 
   // COMPUTING ELASTIC FORCE:
   for (j = j_min; j < j_max; j++)
   {
-    k = neighbour[j];                                                           // Computing neighbour index...
-    conjugate = position_int[k].xyz;                                                // Getting neighbour position...
-    link = p_int - conjugate;                                                   // Getting neighbour link vector...
-    R = resting[j];                                                             // Getting neighbour link resting length...
-    K = stiffness[j];                                                           // Getting neighbour link stiffness...
-    L = length(link);                                                           // Computing neighbour link length...
-    S = L - R;                                                                  // Computing neighbour link strain...
-    
-    if (color[j].w != 0.0f)
-    {
-      color[j].xyz = colormap(0.5f*(1.0f + S/R) - 0.1f);                               // Setting color...
-    }
-    
-    if(L > 0.0f)
-    {
-      D = S*normalize(link);                                                    // Computing neighbour link displacement...
-    }
-    else
-    {
-      D = (float3)(0.0f, 0.0f, 0.0f);
-    }
-
-    Fe += -K*D;                                                                 // Building up elastic force on central node...
-    Jacc += -q*R*K*D;                                                           // Building up radiated momentum from central node...
+    k = neighbour[j];                                                                 // Computing neighbour index...
+    mate = position_int[k].xyz;                                                       // Getting neighbour position...
+    link = p_int - mate;                                                              // Getting neighbour link vector...
+    L = length(link);                                                                 // Computing neighbour link length...
+    R = resting[j];                                                                   // Getting neighbour link resting length...
+    S = L - R;                                                                        // Computing neighbour link strain...
+    K = stiffness[j];                                                                 // Getting neighbour link stiffness...
+    Fspring = -K*S;                                                                   // Computing elastic force on central node (as scalar)...
+    Jacc += 0.5f*D*Fspring*R;                                                         // Building up radiated energy from central node...
 
     if(K != 0.0f)
     {
-      b++;                                                                      // Counting MSM's neighbours...
+      b = b + 1.0f;                                                                   // Counting 1st and 2nd nearest neighbours around the central node...
     }
   }
 
-  // COMPUTING DISPERSIVE FORCE:
-  for (j = j_min; j < j_max; j++)
-  {
-    R = resting[j];                                                             // Getting neighbour link resting length...
-    K = stiffness[j];                                                           // Getting neighbour link stiffness...
-    
-    if(K != 0.0f)
-    {
-      Fd += Jacc/(b*R);                                                         // Building up dissipative force on central node...
-    }
-  }
-
-  Fv = -B*v_int;                                                                // Computing node viscous force...
-
-  // COMPUTING TOTAL FORCE:
-  F  = Fe + Fv;                                                            // Total force applied to the particle [N]...
-
-  // COMPUTING NEW ACCELERATION ESTIMATION:
-  a_est  = F/m;                                                                 // Computing acceleration [m/s^2]...
-
-  // COMPUTING NEW VELOCITY ESTIMATION:
-  v_est = v + 0.5f*(a + a_est)*dt;                                              // Computing velocity...
-
-  // COMPUTING NEW VISCOUS FORCE ESTIMATION:
-  Fv_est = -B*v_est;                                                            // Computing node viscous force...
-
-  // COMPUTING NEW TOTAL FORCE:
-  F_new = Fe + Fv_est;                                                     // Computing total node force...
-
-  // COMPUTING NEW ACCELERATION:
-  a_new = F_new/m;                                                              // Computing acceleration...
-  
-  // APPLYING FREEDOM CONSTRAINTS:
-  if (fr == 0)
-  {
-    a_new = (float3)(0.0f, 0.0f, 0.0f);                                   // Constraining acceleration...
-  }
-
-  // COMPUTING NEW VELOCITY:
-  v_new = v + 0.5f*(a + a_new)*dt;                                              // Computing velocity...
-
-  // APPLYING FREEDOM CONSTRAINTS:
-  if (fr == 0)
-  {
-    v_new = (float3)(0.0f, 0.0f, 0.0f);                                   // Constraining velocity...
-  }
-
-  // UPDATING KINEMATICS:
-  position[n].xyz = p_int;                                                          // Updating position [m]...
-  velocity[n].xyz = v_new;                                                          // Updating velocity [m/s]...
-  acceleration[n].xyz = a_new;                                                      // Updating acceleration [m/s^2]...
+  position_int[n].w = Jacc;                                                           // Setting central node radiative energy...
+  velocity_int[n].w = b;                                                              // Setting number of 1st + 2nd nearest neighbours...
 }

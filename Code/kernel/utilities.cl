@@ -2,7 +2,23 @@
 /// @author   Erik ZORZIN
 /// @date     26MAR2021
 /// @brief    Some useful functions.
-/// @details  Colormap.
+/// @details  Norm, Colormap.
+
+float3 normzero3 (float3 v)
+{
+    float3 v_norm;
+
+    if(length(v) > 0.0f)
+    {
+      v_norm = normalize(v);                                                        // Computing neighbour link displacement vector...
+    }
+    else
+    {
+      v_norm = (float3)(0.0f, 0.0f, 0.0f);                                          // Considering overlapping zero-length link case...
+    }
+
+    return v_norm;
+}
 
 float3 colormap (float intensity)
 {

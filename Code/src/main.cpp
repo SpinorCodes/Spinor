@@ -1,7 +1,7 @@
 /// @file     main.cpp
 /// @author   Erik ZORZIN
 /// @date     12JAN2021
-/// @brief    Single 1/2 spin spinor, simulated as a tangle of a 3D continuum body.
+/// @brief    Single 1/2 spinor.
 
 #define INTEROP       true                                                                          // "true" = use OpenGL-OpenCL interoperability.
 #define SX            800                                                                           // Window x-size [px].
@@ -33,8 +33,9 @@
 #define OVERLAY_FRAG  "overlay_fragment.frag"                                                       // OpenGL fragment shader.
 #define KERNEL_1      "spinor_kernel_1.cl"                                                          // OpenCL kernel source.
 #define KERNEL_2      "spinor_kernel_2.cl"                                                          // OpenCL kernel source.
+#define KERNEL_3      "spinor_kernel_3.cl"                                                          // OpenCL kernel source.
 #define UTILITIES     "utilities.cl"                                                                // OpenCL utilities source.
-#define MESH          "spinor.msh"                                                                  // GMSH mesh.
+#define MESH          "spacetime.msh"                                                               // GMSH mesh.
 
 #define EPSILON       0.005f                                                                        // Float epsilon for mesh.
 
@@ -67,31 +68,33 @@ int main ()
   nu::opencl*        cl             = new nu::opencl (NU_GPU);                                      // OpenCL context.
   nu::kernel*        K1             = new nu::kernel ();                                            // OpenCL kernel array.
   nu::kernel*        K2             = new nu::kernel ();                                            // OpenCL kernel array.
+  nu::kernel*        K3             = new nu::kernel ();                                            // OpenCL kernel array.
 
-  nu::float4*        position       = new nu::float4 (1);                                           // vec4(position.xyz [m], freedom []).
+  nu::float4*        position       = new nu::float4 (0);                                           // vec4(position.xyz [m], freedom []).
+  nu::float4*        position_int   = new nu::float4 (1);                                           // vec4(position (intermediate) [m], radiative energy [J]).
   nu::float4*        velocity       = new nu::float4 (2);                                           // vec4(velocity.xyz [m/s], friction [N*s/m]).
-  nu::float4*        acceleration   = new nu::float4 (3);                                           // vec4(acceleration.xyz [m/s^2], mass [kg]).
-  nu::float4*        position_int   = new nu::float4 (4);                                           // vec4(position (intermediate) [m], momentum ratio []).
-  nu::float4*        velocity_int   = new nu::float4 (5);                                           // Velocity (intermediate) [m/s].
+  nu::float4*        velocity_int   = new nu::float4 (3);                                           // Velocity (intermediate) [m/s].
+  nu::float4*        acceleration   = new nu::float4 (4);                                           // vec4(acceleration.xyz [m/s^2], mass [kg]).
 
-  nu::float4*        color          = new nu::float4 (0);                                           // vec4(color.rgb [], alpha []).
+  nu::float4*        color          = new nu::float4 (5);                                           // vec4(color.xyz [], alpha []).
   nu::float1*        stiffness      = new nu::float1 (6);                                           // Stiffness.
   nu::float1*        resting        = new nu::float1 (7);                                           // Resting.
-  nu::int1*          central        = new nu::int1 (10);                                            // Central nodes.
-  nu::int1*          neighbour      = new nu::int1 (11);                                            // Neighbour.
-  nu::int1*          offset         = new nu::int1 (12);                                            // Offset.
+  nu::int1*          central        = new nu::int1 (8);                                             // Central nodes.
+  nu::int1*          neighbour      = new nu::int1 (9);                                             // Neighbour.
+  nu::int1*          offset         = new nu::int1 (10);                                            // Offset.
 
-  nu::int1*          particle       = new nu::int1 (14);                                            // Particle.
-  nu::int1*          particle_num   = new nu::int1 (15);                                            // Particle number.
-  nu::float4*        particle_pos   = new nu::float4 (16);                                          // Particle position.
-  nu::int1*          wall           = new nu::int1 (18);                                            // Wall.
-  nu::int1*          wall_num       = new nu::int1 (19);                                            // Wall nodes number.
-  nu::float4*        wall_pos       = new nu::float4 (20);                                          // Wall nodes position.
+  nu::int1*          spinor         = new nu::int1 (11);                                            // Spinor.
+  nu::int1*          spinor_num     = new nu::int1 (12);                                            // Spinor cells number.
+  nu::float4*        spinor_pos     = new nu::float4 (13);                                          // Spinor cells position.
+  nu::int1*          wall           = new nu::int1 (14);                                            // Wall.
+  nu::int1*          wall_num       = new nu::int1 (15);                                            // Wall nodes number.
+  nu::float4*        wall_pos       = new nu::float4 (16);                                          // Wall nodes position.
 
-  nu::float1*        dt             = new nu::float1 (13);                                          // Time step [s].
+  nu::float1*        dispersion     = new nu::float1 (17);                                          // Dispersion fraction [-0.5...1.0].
+  nu::float1*        dt             = new nu::float1 (18);                                          // Time step [s].
 
   // MESH:
-  nu::mesh*          spinor         = new nu::mesh (std::string (GMSH_HOME) + std::string (MESH));  // Mesh cloth.
+  nu::mesh*          spacetime      = new nu::mesh (std::string (GMSH_HOME) + std::string (MESH));  // Spacetime mesh.
   size_t             nodes;                                                                         // Number of nodes.
   size_t             elements;                                                                      // Number of elements.
   size_t             groups;                                                                        // Number of groups.
@@ -141,16 +144,16 @@ int main ()
   ///////////////////////////////////////// DATA INITIALIZATION ///////////////////////////////////////
   /////////////////////////////////////////////////////////////////////////////////////////////////////
   // MESH:
-  spinor->process (VOLUME, 3, NU_MSH_HEX_8);                                                        // Processing mesh...
-  position->data  = spinor->node_coordinates;                                                       // Setting all node coordinates...
-  neighbour->data = spinor->neighbour;                                                              // Setting neighbour indices...
-  central->data   = spinor->neighbour_center;                                                       // Setting neighbour centers...
-  offset->data    = spinor->neighbour_offset;                                                       // Setting neighbour offsets...
-  resting->data   = spinor->neighbour_length;                                                       // Setting resting distances...
-  nodes           = spinor->node.size ();                                                           // Getting the number of nodes...
-  elements        = spinor->element.size ();                                                        // Getting the number of elements...
-  groups          = spinor->group.size ();                                                          // Getting the number of groups...
-  neighbours      = spinor->neighbour.size ();                                                      // Getting the number of neighbours...
+  spacetime->process (VOLUME, 3, NU_MSH_HEX_8);                                                     // Processing mesh...
+  position->data  = spacetime->node_coordinates;                                                    // Setting all node coordinates...
+  neighbour->data = spacetime->neighbour;                                                           // Setting neighbour indices...
+  central->data   = spacetime->neighbour_center;                                                    // Setting neighbour centers...
+  offset->data    = spacetime->neighbour_offset;                                                    // Setting neighbour offsets...
+  resting->data   = spacetime->neighbour_length;                                                    // Setting resting distances...
+  nodes           = spacetime->node.size ();                                                        // Getting the number of nodes...
+  elements        = spacetime->element.size ();                                                     // Getting the number of elements...
+  groups          = spacetime->group.size ();                                                       // Getting the number of groups...
+  neighbours      = spacetime->neighbour.size ();                                                   // Getting the number of neighbours...
   ds              = *std::min_element (std::begin (resting->data), std::end (resting->data));       // Getting cell size...
 
   dV              = pow (ds, 3);                                                                    // Computing cell volume...
@@ -184,21 +187,19 @@ int main ()
   std::cout << "Node mass = " << dm << " [kg]" << std::endl;                                        // Printing message...
 
   // SETTING NEUTRINO ARRAYS (parameters):
-  friction->data.push_back (beta);                                                                  // Setting friction...
+  dispersion->data.push_back (D);                                                                   // Setting dispersion fraction...
   dt->data.push_back (dt_simulation);                                                               // Setting time step...
-  momentum_ratio->data.push_back (Q);                                                               // Setting dissipative to direct momentum flow ratio...
 
   // SETTING NEUTRINO ARRAYS ("nodes" depending):
   for(i = 0; i < nodes; i++)
   {
-    position_int->data.push_back (position->data[i]);                                               // Setting intermediate position...
-    velocity->data.push_back ({0.0f, 0.0f, 0.0f, 1.0f});                                            // Setting velocity...
-    velocity_int->data.push_back ({0.0f, 0.0f, 0.0f, 1.0f});                                        // Setting intermediate velocity...
-    acceleration->data.push_back ({0.0f, 0.0f, 0.0f, 1.0f});                                        // Setting acceleration...
-    mass->data.push_back (dm);                                                                      // Setting mass...
     position->data[i].w = 1.0f;                                                                     // Setting freedom flag...
+    position_int->data.push_back (position->data[i]);                                               // Setting intermediate position...
+    velocity->data.push_back ({0.0f, 0.0f, 0.0f, beta});                                            // Setting velocity...
+    velocity_int->data.push_back ({0.0f, 0.0f, 0.0f, 1.0f});                                        // Setting intermediate velocity...
+    acceleration->data.push_back ({0.0f, 0.0f, 0.0f, dm});                                          // Setting acceleration...
 
-    // Finding particle:
+    // Finding spinor:
     if(
        (0 < sqrt (
                   pow (position->data[i].x, 2) +
@@ -213,13 +214,13 @@ int main ()
        )
       )
     {
-      particle->data.push_back (i);                                                                 // Setting particle index...
-      particle_pos->data.push_back (position->data[i]);                                             // Setting initial particle's position...
+      spinor->data.push_back (i);                                                                   // Setting spinor index...
+      spinor_pos->data.push_back (position->data[i]);                                               // Setting initial spinor's position...
       position->data[i].w = 1.0f;                                                                   // Resetting freedom flag... (EZOR 25APR2021: temporary set to 1)
     }
   }
 
-  particle_num->data.push_back (particle->data.size ());
+  spinor_num->data.push_back (spinor->data.size ());
 
   // SETTING NEUTRINO ARRAYS ("neighbours" depending):
   for(i = 0; i < neighbours; i++)
@@ -255,8 +256,8 @@ int main ()
 
   for(i = 0; i < boundary.size (); i++)
   {
-    spinor->process (boundary[i], 2, NU_MSH_PNT);                                                   // Processing mesh...
-    point       = spinor->node;                                                                     // Getting nodes on border...
+    spacetime->process (boundary[i], 2, NU_MSH_PNT);                                                // Processing mesh...
+    point       = spacetime->node;                                                                  // Getting nodes on border...
     point_nodes = point.size ();                                                                    // Getting the number of nodes on border...
 
     for(j = 0; j < point_nodes; j++)
@@ -267,8 +268,8 @@ int main ()
     point.clear ();
   }
 
-  spinor->process (boundary[0], 2, NU_MSH_PNT);                                                     // Processing mesh...
-  wall->data = spinor->node;                                                                        // Getting nodes on border...
+  spacetime->process (boundary[0], 2, NU_MSH_PNT);                                                  // Processing mesh...
+  wall->data = spacetime->node;                                                                     // Getting nodes on border...
   wall_nodes = wall->data.size ();                                                                  // Getting the number of nodes on border...
 
   for(j = 0; j < wall_nodes; j++)
@@ -288,6 +289,9 @@ int main ()
   K2->addsource (std::string (KERNEL_HOME) + std::string (UTILITIES));                              // Setting kernel source file...
   K2->addsource (std::string (KERNEL_HOME) + std::string (KERNEL_2));                               // Setting kernel source file...
   K2->build (nodes, 0, 0);                                                                          // Building kernel program...
+  K3->addsource (std::string (KERNEL_HOME) + std::string (UTILITIES));                              // Setting kernel source file...
+  K3->addsource (std::string (KERNEL_HOME) + std::string (KERNEL_3));                               // Setting kernel source file...
+  K3->build (nodes, 0, 0);                                                                          // Building kernel program...
 
   ////////////////////////////////////////////////////////////////////////////////////////////////////
   //////////////////////////////////// OPENGL SHADERS INITIALIZATION /////////////////////////////////
@@ -312,11 +316,12 @@ int main ()
   while(!gl->closed ())                                                                             // Opening window...
   {
     cl->get_tic ();                                                                                 // Getting "tic" [us]...
-    //cl->write (17);                                                                                 // Writing particle's position...
-    cl->write (20);                                                                                 // Writing wall position...
+    //cl->write (17);                                                                                 // Writing spinor's position...
+    cl->write (16);                                                                                 // Writing wall position...
     cl->acquire ();                                                                                 // Acquiring variables...
     cl->execute (K1, NU_WAIT);                                                                      // Executing OpenCL kernel...
     cl->execute (K2, NU_WAIT);                                                                      // Executing OpenCL kernel...
+    cl->execute (K3, NU_WAIT);                                                                      // Executing OpenCL kernel...
     cl->release ();                                                                                 // Releasing variables...
 
     gl->clear ();                                                                                   // Clearing gl...
@@ -334,97 +339,97 @@ int main ()
 
     if(gl->button_DPAD_LEFT)
     {
-      for(i = 0; i < particle_num->data[0]; i++)
+      for(i = 0; i < spinor_num->data[0]; i++)
       {
-        px                      = particle_pos->data[i].x;
-        py                      = particle_pos->data[i].y;
+        px                    = spinor_pos->data[i].x;
+        py                    = spinor_pos->data[i].y;
 
-        px_new                  = +cos (0.01f)*px - sin (0.01f)*py;
-        py_new                  = +sin (0.01f)*px + cos (0.01f)*py;
+        px_new                = +cos (0.01f)*px - sin (0.01f)*py;
+        py_new                = +sin (0.01f)*px + cos (0.01f)*py;
 
-        particle_pos->data[i].x = px_new;
-        particle_pos->data[i].y = py_new;
+        spinor_pos->data[i].x = px_new;
+        spinor_pos->data[i].y = py_new;
       }
     }
 
     if(gl->button_DPAD_RIGHT)
     {
-      for(i = 0; i < particle_num->data[0]; i++)
+      for(i = 0; i < spinor_num->data[0]; i++)
       {
-        px                      = particle_pos->data[i].x;
-        py                      = particle_pos->data[i].y;
+        px                    = spinor_pos->data[i].x;
+        py                    = spinor_pos->data[i].y;
 
-        px_new                  = +cos (0.01f)*px + sin (0.01f)*py;
-        py_new                  = -sin (0.01f)*px + cos (0.01f)*py;
+        px_new                = +cos (0.01f)*px + sin (0.01f)*py;
+        py_new                = -sin (0.01f)*px + cos (0.01f)*py;
 
-        particle_pos->data[i].x = px_new;
-        particle_pos->data[i].y = py_new;
+        spinor_pos->data[i].x = px_new;
+        spinor_pos->data[i].y = py_new;
       }
     }
 
     if(gl->button_DPAD_DOWN)
     {
-      for(i = 0; i < particle_num->data[0]; i++)
+      for(i = 0; i < spinor_num->data[0]; i++)
       {
-        py                      = particle_pos->data[i].y;
-        pz                      = particle_pos->data[i].z;
+        py                    = spinor_pos->data[i].y;
+        pz                    = spinor_pos->data[i].z;
 
-        py_new                  = +cos (0.01f)*py - sin (0.01f)*pz;
-        pz_new                  = +sin (0.01f)*py + cos (0.01f)*pz;
+        py_new                = +cos (0.01f)*py - sin (0.01f)*pz;
+        pz_new                = +sin (0.01f)*py + cos (0.01f)*pz;
 
-        particle_pos->data[i].y = py_new;
-        particle_pos->data[i].z = pz_new;
+        spinor_pos->data[i].y = py_new;
+        spinor_pos->data[i].z = pz_new;
       }
     }
 
     if(gl->button_DPAD_UP)
     {
-      for(i = 0; i < particle_num->data[0]; i++)
+      for(i = 0; i < spinor_num->data[0]; i++)
       {
-        py                      = particle_pos->data[i].y;
-        pz                      = particle_pos->data[i].z;
+        py                    = spinor_pos->data[i].y;
+        pz                    = spinor_pos->data[i].z;
 
-        py_new                  = +cos (0.01f)*py + sin (0.01f)*pz;
-        pz_new                  = -sin (0.01f)*py + cos (0.01f)*pz;
+        py_new                = +cos (0.01f)*py + sin (0.01f)*pz;
+        pz_new                = -sin (0.01f)*py + cos (0.01f)*pz;
 
-        particle_pos->data[i].y = py_new;
-        particle_pos->data[i].z = pz_new;
+        spinor_pos->data[i].y = py_new;
+        spinor_pos->data[i].z = pz_new;
       }
     }
 
     if(gl->button_LEFT_BUMPER)
     {
-      for(i = 0; i < particle_num->data[0]; i++)
+      for(i = 0; i < spinor_num->data[0]; i++)
       {
-        px                      = particle_pos->data[i].x;
-        py                      = particle_pos->data[i].y;
-        pz                      = particle_pos->data[i].z;
+        px                    = spinor_pos->data[i].x;
+        py                    = spinor_pos->data[i].y;
+        pz                    = spinor_pos->data[i].z;
 
-        px_new                  = px*0.99f;
-        py_new                  = py*0.99f;
-        pz_new                  = pz*0.99f;
+        px_new                = px*0.99f;
+        py_new                = py*0.99f;
+        pz_new                = pz*0.99f;
 
-        particle_pos->data[i].x = px_new;
-        particle_pos->data[i].y = py_new;
-        particle_pos->data[i].z = pz_new;
+        spinor_pos->data[i].x = px_new;
+        spinor_pos->data[i].y = py_new;
+        spinor_pos->data[i].z = pz_new;
       }
     }
 
     if(gl->button_RIGHT_BUMPER)
     {
-      for(i = 0; i < particle_num->data[0]; i++)
+      for(i = 0; i < spinor_num->data[0]; i++)
       {
-        px                      = particle_pos->data[i].x;
-        py                      = particle_pos->data[i].y;
-        pz                      = particle_pos->data[i].z;
+        px                    = spinor_pos->data[i].x;
+        py                    = spinor_pos->data[i].y;
+        pz                    = spinor_pos->data[i].z;
 
-        px_new                  = px/0.99f;
-        py_new                  = py/0.99f;
-        pz_new                  = pz/0.99f;
+        px_new                = px/0.99f;
+        py_new                = py/0.99f;
+        pz_new                = pz/0.99f;
 
-        particle_pos->data[i].x = px_new;
-        particle_pos->data[i].y = py_new;
-        particle_pos->data[i].z = pz_new;
+        spinor_pos->data[i].x = px_new;
+        spinor_pos->data[i].y = py_new;
+        spinor_pos->data[i].z = pz_new;
       }
     }
 
@@ -465,27 +470,29 @@ int main ()
   /////////////////////////////////////////////// CLEANUP ////////////////////////////////////////////
   ////////////////////////////////////////////////////////////////////////////////////////////////////
   delete cl;                                                                                        // Deleting OpenCL context...
-  delete color;                                                                                     // Deleting color data...
   delete position;                                                                                  // Deleting position data...
   delete position_int;                                                                              // Deleting intermediate position data...
   delete velocity;                                                                                  // Deleting velocity data...
   delete velocity_int;                                                                              // Deleting intermediate velocity data...
   delete acceleration;                                                                              // Deleting acceleration data...
+  delete color;                                                                                     // Deleting color data...
   delete stiffness;                                                                                 // Deleting stiffness data...
   delete resting;                                                                                   // Deleting resting data...
-  delete friction;                                                                                  // Deleting friction data...
-  delete mass;                                                                                      // Deleting mass...
   delete central;                                                                                   // Deleting central...
   delete neighbour;                                                                                 // Deleting neighbours...
   delete offset;                                                                                    // Deleting offset...
+  delete spinor;                                                                                    // Deleting spinor...
+  delete spinor_num;                                                                                // Deleting spinor_num...
+  delete spinor_pos;                                                                                // Deleting spinor_pos...
+  delete wall;                                                                                      // Deleting wall...
+  delete wall_num;                                                                                  // Deleting wall_num...
+  delete wall_pos;                                                                                  // Deleting wall_pos...
   delete dt;                                                                                        // Deleting time step data...
-  delete particle;                                                                                  // Deleting particle...
-  delete particle_pos;                                                                              // Deleting particle_pos...
   delete K1;                                                                                        // Deleting OpenCL kernel...
   delete K2;                                                                                        // Deleting OpenCL kernel...
   delete S;                                                                                         // Deleting OpenGL shader...
   delete overlay;                                                                                   // Deleting OpenGL shader...
-  delete spinor;                                                                                    // Deleting spinor mesh...
+  delete spacetime;                                                                                 // Deleting spacetime mesh...
   delete cl;                                                                                        // Deleting OpenCL...
   delete gl;                                                                                        // Deleting OpenGL...
 
