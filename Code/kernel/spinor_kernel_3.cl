@@ -100,7 +100,8 @@ __kernel void thekernel(__global float4*    position,                           
 
     if(K != 0.0f)
     {
-      Fdissipative += Jacc/(b*R)*direction;                                           // Building up force from central node radiated energy...
+      //printf("Fspring = %f, Jacc = %f\n", Fspring, Jacc);
+      Fdissipative += -2.0f*Jacc/(b*R)*direction;                                          // Building up force from central node radiated energy...
     }
     
     if (color[j].w != 0.0f)
