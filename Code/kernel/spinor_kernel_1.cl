@@ -4,7 +4,7 @@
 /// @brief    1st kernel.
 /// @details  Applies freedom contraints, computes new position, uptades intermediate position.
 __kernel void thekernel(__global float4*    position,                                 // vec4(position.xyz [m], freedom []).
-                        __global float4*    position_int,                             // vec4(position (intermediate) [m], momentum ratio []).
+                        __global float4*    position_int,                             // vec4(position (intermediate) [m], radiative energy [J]).
                         __global float4*    velocity,                                 // vec4(velocity.xyz [m/s], friction [N*s/m]).
                         __global float4*    velocity_int,                             // vec4(velocity (intermediate) [m/s], number of 1st + 2nd nearest neighbours []).
                         __global float4*    acceleration,                             // vec4(acceleration.xyz [m/s^2], mass [kg]).
