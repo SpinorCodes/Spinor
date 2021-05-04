@@ -56,7 +56,8 @@ __kernel void thekernel(__global float4*    position,                           
   float3        Fv_est            = (float3)(0.0f, 0.0f, 0.0f);                       // Central node viscous force (estimation).
   float3        F                 = (float3)(0.0f, 0.0f, 0.0f);                       // Central node total force.
   float3        F_new             = (float3)(0.0f, 0.0f, 0.0f);                       // Central node total force (new).
-  int           b                 = 0.0f;                                             // Number of 1st + 2nd nearest neighbours.
+  int           b_central         = velocity_int[n].w;                                // Number of 1st + 2nd nearest neighbours at central node.
+  int           b_mate            = 0.0f;                                             // Number of 1st + 2nd nearest neighbours at neighbour node.
   
   float3        mate              = (float3)(0.0f, 0.0f, 0.0f);                       // Neighbour node position.
   float3        link              = (float3)(0.0f, 0.0f, 0.0f);                       // Neighbour link.
@@ -64,7 +65,8 @@ __kernel void thekernel(__global float4*    position,                           
   float         Fspring           = 0.0f;                                             // Spring force (scalar).  
   float3        Fdirect           = (float3)(0.0f, 0.0f, 0.0f);                       // Central ndoe direct force.
   float3        Fdissipative      = (float3)(0.0f, 0.0f, 0.0f);                       // Central node dissipative force.
-  float         Jacc              = position_int[n].w;                                // Central node radiated energy.
+  float         Jacc_central      = position_int[n].w;                                // Central node radiated energy.
+  float         Jacc_mate         = 0.0f;                                             // Neighbour node radiated energy.
   float         R                 = 0.0f;                                             // Neighbour link resting length.
   float         K                 = 0.0f;                                             // Neighbour link stiffness.
   float         S                 = 0.0f;                                             // Neighbour link strain.
@@ -87,6 +89,7 @@ __kernel void thekernel(__global float4*    position,                           
   {
     k = neighbour[j];                                                                 // Computing neighbour index...
     mate = position_int[k].xyz;                                                       // Getting neighbour position...
+    Jacc_mate = position_int[k].w;                                                    // Radiant energy of neighbour node...
     link = p_int - mate;                                                              // Getting neighbour link vector...
     L = length(link);                                                                 // Computing neighbour link length...
     R = resting[j];                                                                   // Getting neighbour link resting length...
@@ -96,12 +99,11 @@ __kernel void thekernel(__global float4*    position,                           
     Fspring = -K*S;                                                                   // Computing elastic force on central node (as scalar)...
     Fe = Fspring*direction;                                                           // Computing elasting force on central node (as vector)...
     Fdirect += (1.0f - fabs(D))*Fe;                                                   // Building up total elastinc force upon central node...
-    b = velocity_int[k].w;                                                            // Getting number of 1st + 2nd nearest neighbours...
+    b_mate = velocity_int[k].w;                                                       // Getting number of 1st + 2nd nearest neighbours...
 
-    if(K != 0.0f)
+    if(K > FLT_EPSILON)
     {
-      //printf("Fspring = %f, Jacc = %f\n", Fspring, Jacc);
-      Fdissipative += -2.0f*Jacc/(b*R)*direction;                                          // Building up force from central node radiated energy...
+      Fdissipative += ((Jacc_central/b_central + Jacc_mate/b_mate)/R)*direction;      // Building up force from central node radiated energy...
     }
     
     if (color[j].w != 0.0f)

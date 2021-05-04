@@ -122,8 +122,8 @@ int main ()
 
   // SIMULATION VARIABLES:
   float              rho            = 200.0f;                                                       // Mass density [kg/m^3].
-  float              E              = 1000000.0f;                                                   // Young's modulus [Pa];
-  float              nu             = -0.25f;                                                       // Poisson's ratio [];
+  float              E              = 100000.0f;                                                    // Young's modulus [Pa];
+  float              nu             = -0.35f;                                                       // Poisson's ratio [];
   float              beta           = 10.0f;                                                        // Damping [kg*s*m].
   float              R              = 3;                                                            // Particle's radius [#cells].
 
