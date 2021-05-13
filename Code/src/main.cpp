@@ -14,15 +14,15 @@
 #define PANZ          -2.0f                                                                         // z-axis pan initial translation.
 
 #ifdef __linux__
-  #define SHADER_HOME "../Spinor/Code/shader/"                                                      // Linux OpenGL shaders directory.
-  #define KERNEL_HOME "../Spinor/Code/kernel/"                                                      // Linux OpenCL kernels directory.
-  #define GMSH_HOME   "../Spinor/Code/mesh/"                                                        // Linux GMSH mesh directory.
+  #define SHADER_HOME "../../Code/shader/"                                                          // Linux OpenGL shaders directory.
+  #define KERNEL_HOME "../../Code/kernel/"                                                          // Linux OpenCL kernels directory.
+  #define GMSH_HOME   "../../Code/mesh/"                                                            // Linux GMSH mesh directory.
 #endif
 
 #ifdef WIN32
-  #define SHADER_HOME "..\\..\\..\\Spinor\\Code\\shader\\"                                          // Windows OpenGL shaders directory.
-  #define KERNEL_HOME "..\\..\\..\\Spinor\\Code\\kernel\\"                                          // Windows OpenCL kernels directory.
-  #define GMSH_HOME   "..\\..\\..\\Spinor\\Code\\mesh\\"                                            // Linux GMSH mesh directory.
+  #define SHADER_HOME "..\\..\\Code\\shader\\"                                                      // Windows OpenGL shaders directory.
+  #define KERNEL_HOME "..\\..\\Code\\kernel\\"                                                      // Windows OpenCL kernels directory.
+  #define GMSH_HOME   "..\\..\\Code\\mesh\\"                                                        // Linux GMSH mesh directory.
 #endif
 
 #define SHADER_VERT   "voxel_vertex.vert"                                                           // OpenGL vertex shader.
@@ -43,8 +43,8 @@
 int main ()
 {
   // INDEXES:
-  size_t             i;                                                                             // Index [#].
-  size_t             j;                                                                             // Index [#].
+  GLuint             i;                                                                             // Index [#].
+  GLuint             j;                                                                             // Index [#].
 
   // MOUSE PARAMETERS:
   float              ms_orbit_rate  = 1.0f;                                                         // Orbit rotation rate [rev/s].
@@ -167,7 +167,7 @@ int main ()
   C               = mu + mu*abs (Q);                                                                // Computing interaction momentum carriers pressure...
   D               = Q/(1.0f + abs (Q));                                                             // Computing dispersion fraction...
   k               = 5.0f/(2.0f + 4.0f*sqrt (2.0f))*mu*dV/pow (ds, 2);                               // Computing spring constant...
-  K               = E/(N + N*nu - pow (N, 2)*nu);                                                   // Computing bulk modulus...
+  K               = E/(N + N*nu - (float)pow (N, 2)*nu);                                            // Computing bulk modulus...
   c               = sqrt (K/rho);                                                                   // Computing speed of pressure waves...
   dt_CFL          = 1.0f/(N*(c/ds));                                                                // Computing Courant-Friedrichs-Lewy critical time step [s]...
   dt_SIM          = safety_CFL*dt_CFL;                                                              // Setting simulation time step [s]...
