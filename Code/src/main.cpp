@@ -125,7 +125,7 @@ int main ()
   float              E              = 100000.0f;                                                    // Young's modulus [Pa];
   float              nu             = 0.8f;                                                         // Poisson's ratio [];
   float              beta           = 0.0f;                                                         // Damping [kg*s*m].
-  float              R              = 2;                                                            // Particle's radius [#cells].
+  float              R              = 3;                                                            // Particle's radius [#cells].
 
   float              ds;                                                                            // Cell size [m].
   float              dV;                                                                            // Cell volume [m^3].
@@ -160,7 +160,7 @@ int main ()
   neighbours      = spacetime->neighbour.size ();                                                   // Getting the number of neighbours...
   ds              = *std::min_element (std::begin (resting->data), std::end (resting->data));       // Getting cell size...
 
-  dV              = pow (ds, N);                                                                    // Computing cell volume...
+  dV              = (float)pow (ds, N);                                                             // Computing cell volume...
   dm              = rho*dV;                                                                         // Computing node mass...
   lambda          = (E*nu)/((nu + 1.0f)*(nu - N*nu + 1.0f));                                        // Computing 1st Lamé parameter...
   mu              = E/(2.0f*nu + 2.0f);                                                             // Computing 2nd Lamé parameter (S-wave modulus)...
@@ -169,7 +169,7 @@ int main ()
   Q               = B/(mu*(1.0f + 2.0f/N));                                                         // Computing dispersive to direct momentum flow ratio...
   C               = mu + mu*abs (Q);                                                                // Computing interaction momentum carriers pressure...
   D               = Q/(1.0f + abs (Q));                                                             // Computing dispersion fraction...
-  k               = 5.0f/(2.0f + 4.0f*sqrt (2.0f))*mu*dV/pow (ds, 2);                               // Computing spring constant...
+  k               = 5.0f/(2.0f + 4.0f*sqrt (2.0f))*mu*dV/(float)pow (ds, 2);                        // Computing spring constant...
   K               = E/(N + N*nu - (float)pow (N, 2)*nu);                                            // Computing bulk modulus...
   v_p             = sqrt (abs (M/rho));                                                             // Computing speed of P-waves...
   v_s             = sqrt (abs (mu/rho));                                                            // Computing speed of S-waves...
@@ -210,7 +210,7 @@ int main ()
     }
   }
 
-  spinor_num->data.push_back (spinor->data.size ());
+  spinor_num->data.push_back ((GLint)spinor->data.size ());
 
   // SETTING NEUTRINO ARRAYS ("neighbours" depending):
   for(i = 0; i < neighbours; i++)
@@ -268,7 +268,7 @@ int main ()
     wall_pos->data.push_back (position->data[wall->data[j]]);
   }
 
-  wall_num->data.push_back (wall_nodes);
+  wall_num->data.push_back ((GLint)wall_nodes);
 
   ////////////////////////////////////////////////////////////////////////////////////////////////////
   //////////////////////////////////// OPENCL KERNELS INITIALIZATION /////////////////////////////////
@@ -387,7 +387,7 @@ int main ()
 
     if(gl->button_DPAD_LEFT)
     {
-      for(i = 0; i < spinor_num->data[0]; i++)
+      for(i = 0; i < (GLuint)spinor_num->data[0]; i++)
       {
         px                    = spinor_pos->data[i].x;
         py                    = spinor_pos->data[i].y;
@@ -402,7 +402,7 @@ int main ()
 
     if(gl->button_DPAD_RIGHT)
     {
-      for(i = 0; i < spinor_num->data[0]; i++)
+      for(i = 0; i < (GLuint)spinor_num->data[0]; i++)
       {
         px                    = spinor_pos->data[i].x;
         py                    = spinor_pos->data[i].y;
@@ -417,7 +417,7 @@ int main ()
 
     if(gl->button_DPAD_DOWN)
     {
-      for(i = 0; i < spinor_num->data[0]; i++)
+      for(i = 0; i < (GLuint)spinor_num->data[0]; i++)
       {
         py                    = spinor_pos->data[i].y;
         pz                    = spinor_pos->data[i].z;
@@ -432,7 +432,7 @@ int main ()
 
     if(gl->button_DPAD_UP)
     {
-      for(i = 0; i < spinor_num->data[0]; i++)
+      for(i = 0; i < (GLuint)spinor_num->data[0]; i++)
       {
         py                    = spinor_pos->data[i].y;
         pz                    = spinor_pos->data[i].z;
@@ -447,7 +447,7 @@ int main ()
 
     if(gl->button_LEFT_BUMPER)
     {
-      for(i = 0; i < spinor_num->data[0]; i++)
+      for(i = 0; i < (GLuint)spinor_num->data[0]; i++)
       {
         px                    = spinor_pos->data[i].x;
         py                    = spinor_pos->data[i].y;
@@ -465,7 +465,7 @@ int main ()
 
     if(gl->button_RIGHT_BUMPER)
     {
-      for(i = 0; i < spinor_num->data[0]; i++)
+      for(i = 0; i < (GLuint)spinor_num->data[0]; i++)
       {
         px                    = spinor_pos->data[i].x;
         py                    = spinor_pos->data[i].y;
@@ -483,7 +483,7 @@ int main ()
 
     if(gl->button_SQUARE)
     {
-      for(i = 0; i < wall_num->data[0]; i++)
+      for(i = 0; i < (GLuint)wall_num->data[0]; i++)
       {
         pz                  = wall_pos->data[i].z;
         pz_new              = pz + ds/10.0f;
@@ -493,7 +493,7 @@ int main ()
 
     if(gl->button_CIRCLE)
     {
-      for(i = 0; i < wall_num->data[0]; i++)
+      for(i = 0; i < (GLuint)wall_num->data[0]; i++)
       {
         pz                  = wall_pos->data[i].z;
         pz_new              = pz - ds/10.0f;
