@@ -48,15 +48,15 @@ __kernel void thekernel(__global float4*    position,                           
     v = (float3)(0.0f, 0.0f, 0.0f);                                                   // Constraining velocity...
     a = (float3)(0.0f, 0.0f, 0.0f);                                                   // Constraining acceleration...
   }
-/*
+
   for(j = 0; j < s_num; j++)
   {
     if(i == spinor[j])
     {
-      p = spinor_pos[j];
+      p = spinor_pos[j].xyz;
     }
   }
-*/
+
   for(j = 0; j < w_num; j++)
   {
     if(i == wall[j])
