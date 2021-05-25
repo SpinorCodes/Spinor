@@ -43,106 +43,124 @@
 int main ()
 {
   // INDEXES:
-  GLuint             i;                                                                             // Index [#].
-  GLuint             j;                                                                             // Index [#].
+  GLuint                           i;                                                               // Index [#].
+  GLuint                           j;                                                               // Index [#].
 
   // MOUSE PARAMETERS:
-  float              ms_orbit_rate  = 1.0f;                                                         // Orbit rotation rate [rev/s].
-  float              ms_pan_rate    = 5.0f;                                                         // Pan translation rate [m/s].
-  float              ms_decaytime   = 1.25f;                                                        // Pan LP filter decay time [s].
+  float                            ms_orbit_rate  = 1.0f;                                           // Orbit rotation rate [rev/s].
+  float                            ms_pan_rate    = 5.0f;                                           // Pan translation rate [m/s].
+  float                            ms_decaytime   = 1.25f;                                          // Pan LP filter decay time [s].
 
   // GAMEPAD PARAMETERS:
-  float              gmp_orbit_rate = 1.0f;                                                         // Orbit angular rate coefficient [rev/s].
-  float              gmp_pan_rate   = 1.0f;                                                         // Pan translation rate [m/s].
-  float              gmp_decaytime  = 1.25f;                                                        // Low pass filter decay time [s].
-  float              gmp_deadzone   = 0.30f;                                                        // Gamepad joystick deadzone [0...1].
+  float                            gmp_orbit_rate = 1.0f;                                           // Orbit angular rate coefficient [rev/s].
+  float                            gmp_pan_rate   = 1.0f;                                           // Pan translation rate [m/s].
+  float                            gmp_decaytime  = 1.25f;                                          // Low pass filter decay time [s].
+  float                            gmp_deadzone   = 0.30f;                                          // Gamepad joystick deadzone [0...1].
 
   // OPENGL:
-  nu::opengl*        gl             = new nu::opengl (NAME, SX, SY, ORBX, ORBY, PANX, PANY, PANZ);  // OpenGL context.
-  nu::shader*        shader_1       = new nu::shader ();                                            // OpenGL shader program.
-  nu::shader*        overlay        = new nu::shader ();                                            // OpenGL shader program.
+  nu::opengl*                      gl             = new nu::opengl (
+                                                                    NAME,
+                                                                    SX,
+                                                                    SY,
+                                                                    ORBX,
+                                                                    ORBY,
+                                                                    PANX,
+                                                                    PANY,
+                                                                    PANZ
+                                                                   );                               // OpenGL context.
+  nu::shader*                      shader_1       = new nu::shader ();                              // OpenGL shader program.
 
   // OPENCL:
-  nu::opencl*        cl             = new nu::opencl (NU_GPU);                                      // OpenCL context.
-  nu::kernel*        kernel_1       = new nu::kernel ();                                            // OpenCL kernel array.
-  nu::kernel*        kernel_2       = new nu::kernel ();                                            // OpenCL kernel array.
-  nu::kernel*        kernel_3       = new nu::kernel ();                                            // OpenCL kernel array.
+  nu::opencl*                      cl             = new nu::opencl (NU_GPU);                        // OpenCL context.
+  nu::kernel*                      kernel_1       = new nu::kernel ();                              // OpenCL kernel array.
+  nu::kernel*                      kernel_2       = new nu::kernel ();                              // OpenCL kernel array.
+  nu::kernel*                      kernel_3       = new nu::kernel ();                              // OpenCL kernel array.
 
-  nu::float4*        position       = new nu::float4 (0);                                           // vec4(position.xyz [m], freedom []).
-  nu::float4*        position_int   = new nu::float4 (1);                                           // vec4(position (intermediate) [m], radiative energy [J]).
-  nu::float4*        velocity       = new nu::float4 (2);                                           // vec4(velocity.xyz [m/s], friction [N*s/m]).
-  nu::float4*        velocity_int   = new nu::float4 (3);                                           // Velocity (intermediate) [m/s].
-  nu::float4*        acceleration   = new nu::float4 (4);                                           // vec4(acceleration.xyz [m/s^2], mass [kg]).
+  nu::float4*                      position       = new nu::float4 (0);                             // vec4(position.xyz [m], freedom []).
+  nu::float4*                      position_int   = new nu::float4 (1);                             // vec4(position (intermediate) [m], radiative energy [J]).
+  nu::float4*                      velocity       = new nu::float4 (2);                             // vec4(velocity.xyz [m/s], friction [N*s/m]).
+  nu::float4*                      velocity_int   = new nu::float4 (3);                             // Velocity (intermediate) [m/s].
+  nu::float4*                      acceleration   = new nu::float4 (4);                             // vec4(acceleration.xyz [m/s^2], mass [kg]).
 
-  nu::float4*        color          = new nu::float4 (5);                                           // vec4(color.xyz [], alpha []).
-  nu::float1*        stiffness      = new nu::float1 (6);                                           // Stiffness.
-  nu::float1*        resting        = new nu::float1 (7);                                           // Resting.
-  nu::int1*          central        = new nu::int1 (8);                                             // Central nodes.
-  nu::int1*          neighbour      = new nu::int1 (9);                                             // Neighbour.
-  nu::int1*          offset         = new nu::int1 (10);                                            // Offset.
+  nu::float4*                      color          = new nu::float4 (5);                             // vec4(color.xyz [], alpha []).
+  nu::float1*                      stiffness      = new nu::float1 (6);                             // Stiffness.
+  nu::float1*                      resting        = new nu::float1 (7);                             // Resting.
+  nu::int1*                        central        = new nu::int1 (8);                               // Central nodes.
+  nu::int1*                        neighbour      = new nu::int1 (9);                               // Neighbour.
+  nu::int1*                        offset         = new nu::int1 (10);                              // Offset.
 
-  nu::int1*          spinor         = new nu::int1 (11);                                            // Spinor.
-  nu::int1*          spinor_num     = new nu::int1 (12);                                            // Spinor cells number.
-  nu::float4*        spinor_pos     = new nu::float4 (13);                                          // Spinor cells position.
-  nu::int1*          wall           = new nu::int1 (14);                                            // Wall.
-  nu::int1*          wall_num       = new nu::int1 (15);                                            // Wall nodes number.
-  nu::float4*        wall_pos       = new nu::float4 (16);                                          // Wall nodes position.
+  nu::int1*                        spinor         = new nu::int1 (11);                              // Spinor.
+  nu::int1*                        spinor_num     = new nu::int1 (12);                              // Spinor cells number.
+  nu::float4*                      spinor_pos     = new nu::float4 (13);                            // Spinor cells position.
+  nu::int1*                        frontier       = new nu::int1 (14);                              // Spacetime frontier.
+  nu::int1*                        frontier_num   = new nu::int1 (15);                              // Frontier nodes number.
+  nu::float4*                      frontier_pos   = new nu::float4 (16);                            // Frontier nodes position.
 
-  nu::float1*        dispersion     = new nu::float1 (17);                                          // Dispersion fraction [-0.5...1.0].
-  nu::float1*        dt             = new nu::float1 (18);                                          // Time step [s].
+  nu::float1*                      dispersion     = new nu::float1 (17);                            // Dispersion fraction [-0.5...1.0].
+  nu::float1*                      dt             = new nu::float1 (18);                            // Time step [s].
 
   // MESH:
-  nu::mesh*          spacetime      = new nu::mesh (std::string (GMSH_HOME) + std::string (MESH));  // Spacetime mesh.
-  size_t             nodes;                                                                         // Number of nodes.
-  size_t             elements;                                                                      // Number of elements.
-  size_t             groups;                                                                        // Number of groups.
-  size_t             neighbours;                                                                    // Number of neighbours.
-  std::vector<GLint> point;                                                                         // Point on frame.
-  size_t             point_nodes;                                                                   // Number of point nodes.
-  size_t             wall_nodes;                                                                    // Number of wall nodes.
-  int                ABCD           = 13;                                                           // "ABCD" surface tag.
-  int                EFGH           = 14;                                                           // "EFGH" surface tag.
-  int                ADHE           = 15;                                                           // "ADHE" surface tag.
-  int                BCGF           = 16;                                                           // "BCGF" surface tag.
-  int                ABFE           = 17;                                                           // "ABFE" surface tag.
-  int                DCGH           = 18;                                                           // "DCGH" surface tag.
-  int                VOLUME         = 1;                                                            // Entire volume tag.
-  std::vector<int>   boundary;                                                                      // Boundary array.
-  float              px;
-  float              py;
-  float              pz;
-  float              px_new;
-  float              py_new;
-  float              pz_new;
-
-  // PLOT:
-  bool               plot_overlay   = false;                                                        // Plot overlay flag.
+  nu::mesh*                        spacetime      = new nu::mesh (
+                                                                  std::string (
+                                                                               GMSH_HOME
+                                                                              ) + std::string (
+                                                                                               MESH
+                                                                                              )
+                                                                 );                                 // Spacetime mesh.
+  size_t                           nodes;                                                           // Number of nodes.
+  size_t                           elements;                                                        // Number of elements.
+  size_t                           groups;                                                          // Number of groups.
+  size_t                           neighbours;                                                      // Number of neighbours.
+  std::vector<GLint>               point;                                                           // Point on frame.
+  size_t                           point_nodes;                                                     // Number of point nodes.
+  size_t                           frontier_nodes;                                                  // Number of frontier nodes.
+  int                              ABCD       = 13;                                                 // "ABCD" surface tag.
+  int                              EFGH       = 14;                                                 // "EFGH" surface tag.
+  int                              ADHE       = 15;                                                 // "ADHE" surface tag.
+  int                              BCGF       = 16;                                                 // "BCGF" surface tag.
+  int                              ABFE       = 17;                                                 // "ABFE" surface tag.
+  int                              DCGH       = 18;                                                 // "DCGH" surface tag.
+  int                              VOLUME     = 1;                                                  // Entire volume tag.
+  std::vector<int>                 boundary;                                                        // Boundary array.
+  float                            px;
+  float                            py;
+  float                            pz;
+  float                            px_new;
+  float                            py_new;
+  float                            pz_new;
 
   // SIMULATION VARIABLES:
-  float              safety_CFL     = 0.2f;                                                         // Courant-Friedrichs-Lewy safety coefficient [].
-  int                N              = 3;                                                            // Number of spatial dimensions of the MSM [].
-  float              rho            = 20.0f;                                                        // Mass density [kg/m^3].
-  float              E              = 100000.0f;                                                    // Young's modulus [Pa];
-  float              nu             = 0.8f;                                                         // Poisson's ratio [];
-  float              beta           = 0.0f;                                                         // Damping [kg*s*m].
-  float              R              = 3;                                                            // Particle's radius [#cells].
+  float                            safety_CFL = 0.2f;                                               // Courant-Friedrichs-Lewy safety coefficient [].
+  int                              N          = 3;                                                  // Number of spatial dimensions of the MSM [].
+  float                            rho        = 20.0f;                                              // Mass density [kg/m^3].
+  float                            E          = 100000.0f;                                          // Young's modulus [Pa];
+  float                            nu         = 1.0f;                                               // Poisson's ratio [];
+  float                            beta       = 0.0f;                                               // Damping [kg*s*m].
+  float                            R          = 1;                                                  // Particle's radius [#cells].
 
-  float              ds;                                                                            // Cell size [m].
-  float              dV;                                                                            // Cell volume [m^3].
-  float              k;                                                                             // Spring constant [N/m].
-  float              K;                                                                             // Bulk modulus [Pa].
-  float              v_p;                                                                           // Speed of P-waves [m/s].
-  float              v_s;                                                                           // Speed of S-waves [m/s].
-  float              dm;                                                                            // Node mass [kg].
-  float              lambda;                                                                        // Lamé 1st parameter [Pa].
-  float              mu;                                                                            // Lamé 2nd parameter (S-wave modulus) [Pa].
-  float              M;                                                                             // P-wave modulus [Pa].
-  float              B;                                                                             // Dispersive pressure [Pa].
-  float              Q;                                                                             // Dispersive to direct momentum flow ratio [].
-  float              C;                                                                             // Interaction momentum carriers pressure [Pa].
-  float              D;                                                                             // Dispersion fraction [-0.5...1.0].
-  float              dt_CFL;                                                                        // Courant-Friedrichs-Lewy critical time step [s].
-  float              dt_SIM;                                                                        // Simulation time step [s].
+  float                            ds;                                                              // Cell size [m].
+  float                            dV;                                                              // Cell volume [m^3].
+  float                            k;                                                               // Spring constant [N/m].
+  float                            K;                                                               // Bulk modulus [Pa].
+  float                            v_p;                                                             // Speed of P-waves [m/s].
+  float                            v_s;                                                             // Speed of S-waves [m/s].
+  float                            dm;                                                              // Node mass [kg].
+  float                            lambda;                                                          // Lamé 1st parameter [Pa].
+  float                            mu;                                                              // Lamé 2nd parameter (S-wave modulus) [Pa].
+  float                            M;                                                               // P-wave modulus [Pa].
+  float                            B;                                                               // Dispersive pressure [Pa].
+  float                            Q;                                                               // Dispersive to direct momentum flow ratio [].
+  float                            C;                                                               // Interaction momentum carriers pressure [Pa].
+  float                            D;                                                               // Dispersion fraction [-0.5...1.0].
+  float                            dt_CFL;                                                          // Courant-Friedrichs-Lewy critical time step [s].
+  float                            dt_SIM;                                                          // Simulation time step [s].
+
+  // BACKUP:
+  std::vector<nu_float4_structure> initial_position;                                                // Backing up initial data...
+  std::vector<nu_float4_structure> initial_position_int;                                            // Backing up initial data...
+  std::vector<nu_float4_structure> initial_velocity;                                                // Backing up initial data...
+  std::vector<nu_float4_structure> initial_velocity_int;                                            // Backing up initial data...
+  std::vector<nu_float4_structure> initial_acceleration;                                            // Backing up initial data...
 
   /////////////////////////////////////////////////////////////////////////////////////////////////////
   ///////////////////////////////////////// DATA INITIALIZATION ///////////////////////////////////////
@@ -247,28 +265,25 @@ int main ()
   for(i = 0; i < boundary.size (); i++)
   {
     spacetime->process (boundary[i], 2, NU_MSH_PNT);                                                // Processing mesh...
-    point       = spacetime->node;                                                                  // Getting nodes on border...
-    point_nodes = point.size ();                                                                    // Getting the number of nodes on border...
+    frontier->data = spacetime->node;                                                               // Getting nodes on the spacetime frontier...
+    frontier_nodes = frontier->data.size ();                                                        // Getting the number of nodes on the spacetime frontier...
 
-    for(j = 0; j < point_nodes; j++)
+    for(j = 0; j < frontier_nodes; j++)
     {
-      position->data[point[j]].w = 0.0f;                                                            // Resetting freedom flag...
+      position->data[frontier->data[j]].w = 0.0f;                                                   // Resetting freedom flag...
+      frontier->data.push_back (j);
+      frontier_pos->data.push_back (position->data[frontier->data[j]]);
     }
 
-    point.clear ();
+    frontier_num->data.push_back ((GLint)frontier_nodes);
   }
 
-  spacetime->process (boundary[0], 2, NU_MSH_PNT);                                                  // Processing mesh...
-  wall->data = spacetime->node;                                                                     // Getting nodes on border...
-  wall_nodes = wall->data.size ();                                                                  // Getting the number of nodes on border...
-
-  for(j = 0; j < wall_nodes; j++)
-  {
-    wall->data.push_back (j);
-    wall_pos->data.push_back (position->data[wall->data[j]]);
-  }
-
-  wall_num->data.push_back ((GLint)wall_nodes);
+  // SETTING INITIAL DATA BACKUP:
+  initial_position     = position->data;                                                            // Setting backup data...
+  initial_position_int = position_int->data;                                                        // Setting backup data...
+  initial_velocity     = velocity->data;                                                            // Setting backup data...
+  initial_velocity_int = velocity_int->data;                                                        // Setting backup data...
+  initial_acceleration = acceleration->data;                                                        // Setting backup data...
 
   ////////////////////////////////////////////////////////////////////////////////////////////////////
   //////////////////////////////////// OPENCL KERNELS INITIALIZATION /////////////////////////////////
@@ -290,10 +305,6 @@ int main ()
   shader_1->addsource (std::string (SHADER_HOME) + std::string (SHADER_GEOM), NU_GEOMETRY);         // Setting shader source file...
   shader_1->addsource (std::string (SHADER_HOME) + std::string (SHADER_FRAG), NU_FRAGMENT);         // Setting shader source file...
   shader_1->build (neighbours);                                                                     // Building shader program...
-  overlay->addsource (std::string (SHADER_HOME) + std::string (OVERLAY_VERT), NU_VERTEX);           // Setting shader source file...
-  overlay->addsource (std::string (SHADER_HOME) + std::string (OVERLAY_GEOM), NU_GEOMETRY);         // Setting shader source file...
-  overlay->addsource (std::string (SHADER_HOME) + std::string (OVERLAY_FRAG), NU_FRAGMENT);         // Setting shader source file...
-  overlay->build (nodes);                                                                           // Building shader program...
 
   ////////////////////////////////////////////////////////////////////////////////////////////////////
   ////////////////////////////////// SETTING OPENCL KERNEL ARGUMENTS /////////////////////////////////
@@ -365,7 +376,7 @@ int main ()
   {
     cl->get_tic ();                                                                                 // Getting "tic" [us]...
     cl->write (13);                                                                                 // Writing spinor's position...
-    cl->write (16);                                                                                 // Writing wall position...
+    cl->write (16);                                                                                 // Writing frontier position...
     cl->acquire ();                                                                                 // Acquiring variables...
     cl->execute (kernel_1, NU_WAIT);                                                                // Executing OpenCL kernel...
     cl->execute (kernel_2, NU_WAIT);                                                                // Executing OpenCL kernel...
@@ -377,12 +388,6 @@ int main ()
     gl->mouse_navigation (ms_orbit_rate, ms_pan_rate, ms_decaytime);                                // Mouse navigation...
     gl->gamepad_navigation (gmp_orbit_rate, gmp_pan_rate, gmp_decaytime, gmp_deadzone);             // Gamepad navigation...
     gl->plot (shader_1);                                                                            // Plotting shared arguments...
-
-    if(plot_overlay)
-    {
-      gl->plot (overlay);                                                                           // Plotting shared arguments...
-    }
-
     gl->refresh ();                                                                                 // Refreshing gl...
 
     if(gl->button_DPAD_LEFT)
@@ -483,27 +488,36 @@ int main ()
 
     if(gl->button_SQUARE)
     {
-      for(i = 0; i < (GLuint)wall_num->data[0]; i++)
+      for(i = 0; i < (GLuint)frontier_num->data[0]; i++)
       {
-        pz                  = wall_pos->data[i].z;
-        pz_new              = pz + ds/10.0f;
-        wall_pos->data[i].z = pz_new;
+        pz                      = frontier_pos->data[i].z;
+        pz_new                  = pz + ds/10.0f;
+        frontier_pos->data[i].z = pz_new;
       }
     }
 
     if(gl->button_CIRCLE)
     {
-      for(i = 0; i < (GLuint)wall_num->data[0]; i++)
+      for(i = 0; i < (GLuint)frontier_num->data[0]; i++)
       {
-        pz                  = wall_pos->data[i].z;
-        pz_new              = pz - ds/10.0f;
-        wall_pos->data[i].z = pz_new;
+        pz                      = frontier_pos->data[i].z;
+        pz_new                  = pz - ds/10.0f;
+        frontier_pos->data[i].z = pz_new;
       }
     }
 
     if(gl->button_TRIANGLE)
     {
-      plot_overlay = !plot_overlay;
+      position->data     = initial_position;                                                        // Restoring backup...
+      position_int->data = initial_position_int;                                                    // Restoring backup...
+      velocity->data     = initial_velocity;                                                        // Restoring backup...
+      velocity_int->data = initial_velocity_int;                                                    // Restoring backup...
+      acceleration->data = initial_acceleration;                                                    // Restoring backup...
+      cl->write (0);                                                                                // Writing data...
+      cl->write (1);                                                                                // Writing data...
+      cl->write (2);                                                                                // Writing data...
+      cl->write (3);                                                                                // Writing data...
+      cl->write (4);                                                                                // Writing data...
     }
 
     if(gl->button_CROSS)
@@ -532,14 +546,13 @@ int main ()
   delete spinor;                                                                                    // Deleting spinor...
   delete spinor_num;                                                                                // Deleting spinor_num...
   delete spinor_pos;                                                                                // Deleting spinor_pos...
-  delete wall;                                                                                      // Deleting wall...
-  delete wall_num;                                                                                  // Deleting wall_num...
-  delete wall_pos;                                                                                  // Deleting wall_pos...
+  delete frontier;                                                                                  // Deleting frontier...
+  delete frontier_num;                                                                              // Deleting frontier_num...
+  delete frontier_pos;                                                                              // Deleting frontier_pos...
   delete dt;                                                                                        // Deleting time step data...
   delete kernel_1;                                                                                  // Deleting OpenCL kernel...
   delete kernel_2;                                                                                  // Deleting OpenCL kernel...
   delete shader_1;                                                                                  // Deleting OpenGL shader...
-  delete overlay;                                                                                   // Deleting OpenGL shader...
   delete spacetime;                                                                                 // Deleting spacetime mesh...
   delete cl;                                                                                        // Deleting OpenCL...
   delete gl;                                                                                        // Deleting OpenGL...
