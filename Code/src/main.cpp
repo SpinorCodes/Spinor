@@ -132,9 +132,9 @@ int main ()
   int                              N              = 3;                                              // Number of spatial dimensions of the MSM [].
   float                            rho            = 20.0f;                                          // Mass density [kg/m^3].
   float                            E              = 100000.0f;                                      // Young's modulus [Pa];
-  float                            nu             = 1.0f;                                           // Poisson's ratio [];
+  float                            nu             = 0.4f;                                           // Poisson's ratio [];
   float                            beta           = 0.0f;                                           // Damping [kg*s*m].
-  float                            R              = 1;                                              // Particle's radius [#cells].
+  float                            R              = 5;                                              // Particle's radius [#cells].
 
   float                            ds;                                                              // Cell size [m].
   float                            dV;                                                              // Cell volume [m^3].
@@ -277,8 +277,7 @@ int main ()
   for(j = 0; j < frontier_nodes; j++)
   {
     position->data[frontier->data[j]].w = 0.0f;                                                     // Resetting freedom flag...
-    //frontier->data.push_back (j);
-    frontier_pos->data[j]               = position->data[frontier->data[j]];
+    frontier_pos->data.push_back (position->data[frontier->data[j]]);
   }
 
   frontier_num->data.push_back ((GLint)frontier_nodes);
@@ -495,8 +494,16 @@ int main ()
     {
       for(i = 0; i < (GLuint)frontier_num->data[0]; i++)
       {
+        px                      = frontier_pos->data[i].x;
+        py                      = frontier_pos->data[i].y;
         pz                      = frontier_pos->data[i].z;
-        pz_new                  = pz + ds/10.0f;
+
+        px_new                  = px*0.99f;
+        py_new                  = py*0.99f;
+        pz_new                  = pz*0.99f;
+
+        frontier_pos->data[i].x = px_new;
+        frontier_pos->data[i].y = py_new;
         frontier_pos->data[i].z = pz_new;
       }
     }
@@ -505,8 +512,16 @@ int main ()
     {
       for(i = 0; i < (GLuint)frontier_num->data[0]; i++)
       {
+        px                      = frontier_pos->data[i].x;
+        py                      = frontier_pos->data[i].y;
         pz                      = frontier_pos->data[i].z;
-        pz_new                  = pz - ds/10.0f;
+
+        px_new                  = px/0.99f;
+        py_new                  = py/0.99f;
+        pz_new                  = pz/0.99f;
+
+        frontier_pos->data[i].x = px_new;
+        frontier_pos->data[i].y = py_new;
         frontier_pos->data[i].z = pz_new;
       }
     }
