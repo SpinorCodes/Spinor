@@ -107,20 +107,18 @@ int main ()
                                                                                                MESH
                                                                                               )
                                                                  );                                 // Spacetime mesh.
-  size_t                           nodes;                                                           // Number of nodes.
-  size_t                           elements;                                                        // Number of elements.
-  size_t                           groups;                                                          // Number of groups.
-  size_t                           neighbours;                                                      // Number of neighbours.
-  std::vector<GLint>               point;                                                           // Point on frame.
-  size_t                           point_nodes;                                                     // Number of point nodes.
-  size_t                           frontier_nodes;                                                  // Number of frontier nodes.
-  int                              ABCD       = 13;                                                 // "ABCD" surface tag.
-  int                              EFGH       = 14;                                                 // "EFGH" surface tag.
-  int                              ADHE       = 15;                                                 // "ADHE" surface tag.
-  int                              BCGF       = 16;                                                 // "BCGF" surface tag.
-  int                              ABFE       = 17;                                                 // "ABFE" surface tag.
-  int                              DCGH       = 18;                                                 // "DCGH" surface tag.
-  int                              VOLUME     = 1;                                                  // Entire volume tag.
+  size_t                           nodes          = 0;                                              // Number of nodes.
+  size_t                           elements       = 0;                                              // Number of elements.
+  size_t                           groups         = 0;                                              // Number of groups.
+  size_t                           neighbours     = 0;                                              // Number of neighbours.
+  size_t                           frontier_nodes = 0;                                              // Number of frontier nodes.
+  int                              ABCD           = 13;                                             // "ABCD" surface tag.
+  int                              EFGH           = 14;                                             // "EFGH" surface tag.
+  int                              ADHE           = 15;                                             // "ADHE" surface tag.
+  int                              BCGF           = 16;                                             // "BCGF" surface tag.
+  int                              ABFE           = 17;                                             // "ABFE" surface tag.
+  int                              DCGH           = 18;                                             // "DCGH" surface tag.
+  int                              VOLUME         = 1;                                              // Entire volume tag.
   std::vector<int>                 boundary;                                                        // Boundary array.
   float                            px;
   float                            py;
@@ -130,13 +128,13 @@ int main ()
   float                            pz_new;
 
   // SIMULATION VARIABLES:
-  float                            safety_CFL = 0.2f;                                               // Courant-Friedrichs-Lewy safety coefficient [].
-  int                              N          = 3;                                                  // Number of spatial dimensions of the MSM [].
-  float                            rho        = 20.0f;                                              // Mass density [kg/m^3].
-  float                            E          = 100000.0f;                                          // Young's modulus [Pa];
-  float                            nu         = 1.0f;                                               // Poisson's ratio [];
-  float                            beta       = 0.0f;                                               // Damping [kg*s*m].
-  float                            R          = 1;                                                  // Particle's radius [#cells].
+  float                            safety_CFL     = 0.2f;                                           // Courant-Friedrichs-Lewy safety coefficient [].
+  int                              N              = 3;                                              // Number of spatial dimensions of the MSM [].
+  float                            rho            = 20.0f;                                          // Mass density [kg/m^3].
+  float                            E              = 100000.0f;                                      // Young's modulus [Pa];
+  float                            nu             = 1.0f;                                           // Poisson's ratio [];
+  float                            beta           = 0.0f;                                           // Damping [kg*s*m].
+  float                            R              = 1;                                              // Particle's radius [#cells].
 
   float                            ds;                                                              // Cell size [m].
   float                            dV;                                                              // Cell volume [m^3].
@@ -265,18 +263,25 @@ int main ()
   for(i = 0; i < boundary.size (); i++)
   {
     spacetime->process (boundary[i], 2, NU_MSH_PNT);                                                // Processing mesh...
-    frontier->data = spacetime->node;                                                               // Getting nodes on the spacetime frontier...
-    frontier_nodes = frontier->data.size ();                                                        // Getting the number of nodes on the spacetime frontier...
+    frontier->data.insert (
+                           frontier->data.end (),
+                           spacetime->node.begin (),
+                           spacetime->node.end ()
+                          );                                                                        // Getting nodes on the spacetime frontier...
 
-    for(j = 0; j < frontier_nodes; j++)
-    {
-      position->data[frontier->data[j]].w = 0.0f;                                                   // Resetting freedom flag...
-      frontier->data.push_back (j);
-      frontier_pos->data.push_back (position->data[frontier->data[j]]);
-    }
-
-    frontier_num->data.push_back ((GLint)frontier_nodes);
+    frontier_nodes += spacetime->node.size ();                                                      // Getting the number of nodes on the spacetime frontier...
   }
+
+  std::cout << "frontier_nodes = " << frontier_nodes << std::endl;
+
+  for(j = 0; j < frontier_nodes; j++)
+  {
+    position->data[frontier->data[j]].w = 0.0f;                                                     // Resetting freedom flag...
+    //frontier->data.push_back (j);
+    frontier_pos->data[j]               = position->data[frontier->data[j]];
+  }
+
+  frontier_num->data.push_back ((GLint)frontier_nodes);
 
   // SETTING INITIAL DATA BACKUP:
   initial_position     = position->data;                                                            // Setting backup data...

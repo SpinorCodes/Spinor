@@ -17,9 +17,9 @@ __kernel void thekernel(__global float4*    position,                           
                         __global int*       spinor,                                   // Spinor.
                         __global int*       spinor_num,                               // Spinor cells number.
                         __global float4*    spinor_pos,                               // Spinor cells position.
-                        __global int*       wall,                                     // Wall.
-                        __global int*       wall_num,                                 // Wall cells number.
-                        __global float4*    wall_pos,                                 // Wall cells posistion.
+                        __global int*       frontier,                                 // Spacetime frontier.
+                        __global int*       frontier_num,                             // Spacetime frontier cells number.
+                        __global float4*    frontier_pos,                             // Spacetime frontier cells posistion.
                         __global float*     dispersion,                               // Dispersion fraction.
                         __global float*     dt_simulation                             // Simulation time step.
                         )                                 
@@ -40,7 +40,7 @@ __kernel void thekernel(__global float4*    position,                           
   float         fr                = position[i].w;                                    // Central node freedom flag.
   float         dt                = dt_simulation[0];                                 // Simulation time step.
   int           s_num             = spinor_num[0];                                    // Spinor cells number.
-  int           w_num             = wall_num[0];                                      // Wall cells number.
+  int           f_num             = frontier_num[0];                                  // Spacetime frontier cells number.
 
   // APPLYING FREEDOM CONSTRAINTS:
   if (fr == 0)
@@ -57,11 +57,11 @@ __kernel void thekernel(__global float4*    position,                           
     }
   }
 
-  for(j = 0; j < w_num; j++)
+  for(j = 0; j < f_num; j++)
   {
-    if(i == wall[j])
+    if(i == frontier[j])
     {
-      p = wall_pos[j].xyz;
+      p = frontier_pos[j].xyz;
     }
   }
 

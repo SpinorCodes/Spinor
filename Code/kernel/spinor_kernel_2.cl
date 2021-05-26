@@ -17,9 +17,9 @@ __kernel void thekernel(__global float4*    position,                           
                         __global int*       spinor,                                   // Spinor.
                         __global int*       spinor_num,                               // Spinor cells number.
                         __global float4*    spinor_pos,                               // Spinor cells position.
-                        __global int*       wall,                                     // Wall.
-                        __global int*       wall_num,                                 // Wall cells number.
-                        __global float4*    wall_pos,                                 // Wall cells posistion.
+                        __global int*       frontier,                                 // Spacetime frontier.
+                        __global int*       frontier_num,                             // Spacetime frontier cells number.
+                        __global float4*    frontier_pos,                             // Spacetime frontier cells posistion.
                         __global float*     dispersion,                               // Dispersion fraction.
                         __global float*     dt_simulation                             // Simulation time step.
                         )   
