@@ -130,11 +130,11 @@ int main ()
   // SIMULATION VARIABLES:
   float                            safety_CFL     = 0.2f;                                           // Courant-Friedrichs-Lewy safety coefficient [].
   int                              N              = 3;                                              // Number of spatial dimensions of the MSM [].
-  float                            rho            = 20.0f;                                          // Mass density [kg/m^3].
-  float                            E              = 100000.0f;                                      // Young's modulus [Pa];
-  float                            nu             = 0.4f;                                           // Poisson's ratio [];
+  float                            rho            = 1E-7f;                                          // Mass density [kg/m^3].
+  float                            E              = 1E+30f;                                         // Young's modulus [Pa];
+  float                            nu             = 0.48f;                                          // Poisson's ratio [];
   float                            beta           = 1.0f;                                           // Damping [kg*s*m].
-  float                            R              = 3;                                              // Particle's radius [#cells].
+  float                            R              = 0.5;                                            // Particle's radius [#cells].
 
   float                            ds;                                                              // Cell size [m].
   float                            dV;                                                              // Cell volume [m^3].
@@ -187,7 +187,7 @@ int main ()
   Q               = B/(mu*(1.0f + 2.0f/N));                                                         // Computing dispersive to direct momentum flow ratio...
   C               = mu + mu*abs (Q);                                                                // Computing interaction momentum carriers pressure...
   D               = Q/(1.0f + abs (Q));                                                             // Computing dispersion fraction...
-  k               = 5.0f/(2.0f + 4.0f*sqrt (2.0f))*mu*dV/(float)pow (ds, 2);                        // Computing spring constant...
+  k               = 5.0f/(2.0f + 4.0f*sqrt (2.0f))*mu*ds;                                           // Computing spring constant...
   K               = E/(N + N*nu - (float)pow (N, 2)*nu);                                            // Computing bulk modulus...
   v_p             = sqrt (abs (M/rho));                                                             // Computing speed of P-waves...
   v_s             = sqrt (abs (mu/rho));                                                            // Computing speed of S-waves...
@@ -224,7 +224,7 @@ int main ()
     {
       spinor->data.push_back (i);                                                                   // Setting spinor index...
       spinor_pos->data.push_back (position->data[i]);                                               // Setting initial spinor's position...
-      position->data[i].w = 1.0f;                                                                   // Resetting freedom flag... (EZOR 25APR2021: temporary set to 1)
+      position->data[i].w = 0.0f;                                                                   // Resetting freedom flag... (EZOR 25APR2021: temporary set to 1)
     }
   }
 
@@ -234,11 +234,17 @@ int main ()
   for(i = 0; i < neighbours; i++)
   {
     // Building 3D isotropic 18-node cubic MSM:
-    if(resting->data[i] < (sqrt (2.0f)*ds + FLT_EPSILON))
+    if(resting->data[i] < (ds + FLT_EPSILON))
     {
-      stiffness->data.push_back (k);                                                                // Setting 1st and 2nd nearest neighbour link stiffness...
+      stiffness->data.push_back (k);                                                                // Setting 1st nearest neighbour link stiffness...
     }
-    else
+    if((resting->data[i] > (ds + FLT_EPSILON)) &&
+       (resting->data[i] < (sqrt (2.0f)*ds + FLT_EPSILON))
+      )
+    {
+      stiffness->data.push_back (k);                                                                // Setting 2nd nearest neighbour link stiffness...
+    }
+    if(resting->data[i] > (sqrt (2.0f)*ds + FLT_EPSILON))
     {
       stiffness->data.push_back (0.0f);                                                             // Setting 3rd nearest neighbour link stiffness...
     }
@@ -502,9 +508,9 @@ int main ()
         py                      = frontier_pos->data[i].y;
         pz                      = frontier_pos->data[i].z;
 
-        px_new                  = px*0.99f;
-        py_new                  = py*0.99f;
-        pz_new                  = pz*0.99f;
+        px_new                  = px*0.999f;
+        py_new                  = py*0.999f;
+        pz_new                  = pz*0.999f;
 
         frontier_pos->data[i].x = px_new;
         frontier_pos->data[i].y = py_new;
@@ -520,9 +526,9 @@ int main ()
         py                      = frontier_pos->data[i].y;
         pz                      = frontier_pos->data[i].z;
 
-        px_new                  = px/0.99f;
-        py_new                  = py/0.99f;
-        pz_new                  = pz/0.99f;
+        px_new                  = px/0.999f;
+        py_new                  = py/0.999f;
+        pz_new                  = pz/0.999f;
 
         frontier_pos->data[i].x = px_new;
         frontier_pos->data[i].y = py_new;
