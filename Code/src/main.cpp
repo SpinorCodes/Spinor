@@ -12,6 +12,7 @@
 #define PANX          0.0f                                                                          // x-axis pan initial translation.
 #define PANY          0.0f                                                                          // y-axis pan initial translation.
 #define PANZ          -2.0f                                                                         // z-axis pan initial translation.
+#define ROT           0.05f
 
 #ifdef __linux__
   #define SHADER_HOME "../../Code/shader/"                                                          // Linux OpenGL shaders directory.
@@ -128,13 +129,13 @@ int main ()
   float                            pz_new;
 
   // SIMULATION VARIABLES:
-  float                            safety_CFL     = 0.2f;                                           // Courant-Friedrichs-Lewy safety coefficient [].
+  float                            safety_CFL     = 1.0f;                                           // Courant-Friedrichs-Lewy safety coefficient [].
   int                              N              = 3;                                              // Number of spatial dimensions of the MSM [].
-  float                            rho            = 1E-7f;                                          // Mass density [kg/m^3].
-  float                            E              = 1E+30f;                                         // Young's modulus [Pa];
-  float                            nu             = 0.48f;                                          // Poisson's ratio [];
-  float                            beta           = 1.0f;                                           // Damping [kg*s*m].
-  float                            R              = 0.5;                                            // Particle's radius [#cells].
+  float                            rho            = 1E+9f;                                          // Mass density [kg/m^3].
+  float                            E              = 1E+6f;                                          // Young's modulus [Pa];
+  float                            nu             = 0.25f;                                          // Poisson's ratio [];
+  float                            beta           = 1E+5f;                                          // Damping [kg*s*m].
+  float                            R              = 3;                                              // Particle's radius [#cells].
 
   float                            ds;                                                              // Cell size [m].
   float                            dV;                                                              // Cell volume [m^3].
@@ -411,8 +412,8 @@ int main ()
         px                    = spinor_pos->data[i].x;
         py                    = spinor_pos->data[i].y;
 
-        px_new                = +cos (0.01f)*px - sin (0.01f)*py;
-        py_new                = +sin (0.01f)*px + cos (0.01f)*py;
+        px_new                = +cos (ROT)*px - sin (ROT)*py;
+        py_new                = +sin (ROT)*px + cos (ROT)*py;
 
         spinor_pos->data[i].x = px_new;
         spinor_pos->data[i].y = py_new;
@@ -426,8 +427,8 @@ int main ()
         px                    = spinor_pos->data[i].x;
         py                    = spinor_pos->data[i].y;
 
-        px_new                = +cos (0.01f)*px + sin (0.01f)*py;
-        py_new                = -sin (0.01f)*px + cos (0.01f)*py;
+        px_new                = +cos (ROT)*px + sin (ROT)*py;
+        py_new                = -sin (ROT)*px + cos (ROT)*py;
 
         spinor_pos->data[i].x = px_new;
         spinor_pos->data[i].y = py_new;
@@ -441,8 +442,8 @@ int main ()
         py                    = spinor_pos->data[i].y;
         pz                    = spinor_pos->data[i].z;
 
-        py_new                = +cos (0.01f)*py - sin (0.01f)*pz;
-        pz_new                = +sin (0.01f)*py + cos (0.01f)*pz;
+        py_new                = +cos (ROT)*py - sin (ROT)*pz;
+        pz_new                = +sin (ROT)*py + cos (ROT)*pz;
 
         spinor_pos->data[i].y = py_new;
         spinor_pos->data[i].z = pz_new;
@@ -456,8 +457,8 @@ int main ()
         py                    = spinor_pos->data[i].y;
         pz                    = spinor_pos->data[i].z;
 
-        py_new                = +cos (0.01f)*py + sin (0.01f)*pz;
-        pz_new                = -sin (0.01f)*py + cos (0.01f)*pz;
+        py_new                = +cos (ROT)*py + sin (ROT)*pz;
+        pz_new                = -sin (ROT)*py + cos (ROT)*pz;
 
         spinor_pos->data[i].y = py_new;
         spinor_pos->data[i].z = pz_new;
