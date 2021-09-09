@@ -12,7 +12,7 @@
 #define PANX          0.0f                                                                          // x-axis pan initial translation.
 #define PANY          0.0f                                                                          // y-axis pan initial translation.
 #define PANZ          -2.0f                                                                         // z-axis pan initial translation.
-#define ROT           0.05f
+#define ROT           0.01f
 
 #ifdef __linux__
   #define SHADER_HOME "../../Code/shader/"                                                          // Linux OpenGL shaders directory.
@@ -131,11 +131,11 @@ int main ()
   // SIMULATION VARIABLES:
   float                            safety_CFL     = 1.0f;                                           // Courant-Friedrichs-Lewy safety coefficient [].
   int                              N              = 3;                                              // Number of spatial dimensions of the MSM [].
-  float                            rho            = 1E+9f;                                          // Mass density [kg/m^3].
-  float                            E              = 1E+6f;                                          // Young's modulus [Pa];
+  float                            rho            = 1E+4f;                                          // Mass density [kg/m^3].
+  float                            E              = 1E+3f;                                          // Young's modulus [Pa];
   float                            nu             = 0.25f;                                          // Poisson's ratio [];
-  float                            beta           = 1E+5f;                                          // Damping [kg*s*m].
-  float                            R              = 3;                                              // Particle's radius [#cells].
+  float                            beta           = 1E+1f;                                          // Damping [kg*s*m].
+  float                            R              = 1;                                              // Particle's radius [#cells].
 
   float                            ds;                                                              // Cell size [m].
   float                            dV;                                                              // Cell volume [m^3].
@@ -219,7 +219,7 @@ int main ()
               pow (position->data[i].x, 2) +
               pow (position->data[i].y, 2) +
               pow (position->data[i].z, 2)
-             ) < (sqrt (3.0f)*ds*R + FLT_EPSILON)
+             ) < (sqrt (3.0f)*ds*R + 0.01f)
        )
       )
     {
@@ -235,23 +235,23 @@ int main ()
   for(i = 0; i < neighbours; i++)
   {
     // Building 3D isotropic 18-node cubic MSM:
-    if(resting->data[i] < (ds + FLT_EPSILON))
+    if(resting->data[i] < (ds + 0.01f))
     {
       stiffness->data.push_back (k);                                                                // Setting 1st nearest neighbour link stiffness...
     }
-    if((resting->data[i] > (ds + FLT_EPSILON)) &&
-       (resting->data[i] < (sqrt (2.0f)*ds + FLT_EPSILON))
+    if((resting->data[i] > (ds + 0.01f)) &&
+       (resting->data[i] < (sqrt (2.0f)*ds + 0.01f))
       )
     {
       stiffness->data.push_back (k);                                                                // Setting 2nd nearest neighbour link stiffness...
     }
-    if(resting->data[i] > (sqrt (2.0f)*ds + FLT_EPSILON))
+    if(resting->data[i] > (sqrt (2.0f)*ds + 0.01f))
     {
       stiffness->data.push_back (0.0f);                                                             // Setting 3rd nearest neighbour link stiffness...
     }
 
     // Showing only 1st neighbours:
-    if(resting->data[i] < (ds + FLT_EPSILON))
+    if(resting->data[i] < (ds + 0.01f))
     {
       color->data.push_back ({0.0f, 1.0f, 0.0f, 0.3f});                                             // Setting color...
     }
@@ -262,12 +262,12 @@ int main ()
   }
 
   // SETTING MESH PHYSICAL CONSTRAINTS:
-  boundary.push_back (ABCD);                                                                        // Setting boundary surface...
-  boundary.push_back (EFGH);                                                                        // Setting boundary surface...
+  //boundary.push_back (ABCD);                                                                        // Setting boundary surface...
+  //boundary.push_back (EFGH);                                                                        // Setting boundary surface...
   boundary.push_back (ADHE);                                                                        // Setting boundary surface...
   boundary.push_back (BCGF);                                                                        // Setting boundary surface...
-  boundary.push_back (ABFE);                                                                        // Setting boundary surface...
-  boundary.push_back (DCGH);                                                                        // Setting boundary surface...
+  //boundary.push_back (ABFE);                                                                        // Setting boundary surface...
+  //boundary.push_back (DCGH);                                                                        // Setting boundary surface...
 
   for(i = 0; i < boundary.size (); i++)
   {
