@@ -129,13 +129,13 @@ int main ()
   float                            pz_new;
 
   // SIMULATION VARIABLES:
-  float                            safety_CFL     = 0.2f;                                           // Courant-Friedrichs-Lewy safety coefficient [].
+  float                            safety_CFL     = 1.0f;                                           // Courant-Friedrichs-Lewy safety coefficient [].
   int                              N              = 3;                                              // Number of spatial dimensions of the MSM [].
-  float                            rho            = 1E+3f;                                          // Mass density [kg/m^3].
-  float                            E              = 1E+4f;                                          // Young's modulus [Pa];
-  float                            nu             = +0.49f;                                         // Poisson's ratio [];
-  float                            beta           = 1E-3f;                                          // Damping [kg*s*m].
-  float                            R              = 1;                                              // Particle's radius [#cells].
+  float                            rho            = 1E+2f;                                          // Mass density [kg/m^3].
+  float                            E              = 1E+7f;                                          // Young's modulus [Pa];
+  float                            nu             = 0.25f;                                          // Poisson's ratio [];
+  float                            beta           = 1E-0f;                                          // Damping [kg*s*m].
+  float                            R              = 2;                                              // Particle's radius [#cells].
 
   float                            ds;                                                              // Cell size [m].
   float                            dV;                                                              // Cell volume [m^3].
@@ -209,7 +209,7 @@ int main ()
     acceleration->data.push_back ({0.0f, 0.0f, 0.0f, dm});                                          // Setting acceleration...
 
     // Finding spinor:
-    if(
+    /*if(
        (0 < sqrt (
                   pow (position->data[i].x, 2) +
                   pow (position->data[i].y, 2) +
@@ -221,6 +221,11 @@ int main ()
               pow (position->data[i].z, 2)
              ) < (sqrt (3.0f)*ds*R + 0.01f)
        )
+       )
+     */
+    if(
+       ((-0.001f - ds) < position->data[i].x) &&
+       (position->data[i].x < (0.001f + ds))
       )
     {
       spinor->data.push_back (i);                                                                   // Setting spinor index...
@@ -475,9 +480,9 @@ int main ()
         py                    = spinor_pos->data[i].y;
         pz                    = spinor_pos->data[i].z;
 
-        px_new                = px*0.99f;
-        py_new                = py*0.99f;
-        pz_new                = pz*0.99f;
+        px_new                = px*0.9999f;
+        py_new                = py*0.9999f;
+        pz_new                = pz*0.9999f;
 
         spinor_pos->data[i].x = px_new;
         spinor_pos->data[i].y = py_new;
@@ -493,9 +498,9 @@ int main ()
         py                    = spinor_pos->data[i].y;
         pz                    = spinor_pos->data[i].z;
 
-        px_new                = px/0.99f;
-        py_new                = py/0.99f;
-        pz_new                = pz/0.99f;
+        px_new                = px/0.9999f;
+        py_new                = py/0.9999f;
+        pz_new                = pz/0.9999f;
 
         spinor_pos->data[i].x = px_new;
         spinor_pos->data[i].y = py_new;
@@ -511,9 +516,9 @@ int main ()
         py                      = frontier_pos->data[i].y;
         pz                      = frontier_pos->data[i].z;
 
-        px_new                  = px*0.999f;
-        py_new                  = py*0.999f;
-        pz_new                  = pz*0.999f;
+        px_new                  = px*0.9999f;
+        py_new                  = py*0.9999f;
+        pz_new                  = pz*0.9999f;
 
         frontier_pos->data[i].x = px_new;
         frontier_pos->data[i].y = py_new;
@@ -529,9 +534,9 @@ int main ()
         py                      = frontier_pos->data[i].y;
         pz                      = frontier_pos->data[i].z;
 
-        px_new                  = px/0.999f;
-        py_new                  = py/0.999f;
-        pz_new                  = pz/0.999f;
+        px_new                  = px/0.9999f;
+        py_new                  = py/0.9999f;
+        pz_new                  = pz/0.9999f;
 
         frontier_pos->data[i].x = px_new;
         frontier_pos->data[i].y = py_new;
