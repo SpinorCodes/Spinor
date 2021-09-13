@@ -132,8 +132,8 @@ int main ()
   float                            safety_CFL     = 1.0f;                                           // Courant-Friedrichs-Lewy safety coefficient [].
   int                              N              = 3;                                              // Number of spatial dimensions of the MSM [].
   float                            rho            = 1E+2f;                                          // Mass density [kg/m^3].
-  float                            E              = 1E+7f;                                          // Young's modulus [Pa];
-  float                            nu             = 0.25f;                                          // Poisson's ratio [];
+  float                            E              = 1E+8f;                                          // Young's modulus [Pa];
+  float                            nu             = 0.0f;                                           // Poisson's ratio [];
   float                            beta           = 1E-0f;                                          // Damping [kg*s*m].
   float                            R              = 2;                                              // Particle's radius [#cells].
 
