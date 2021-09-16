@@ -80,7 +80,7 @@ int main ()
   nu::float4*                      position       = new nu::float4 (0);                             // vec4(position.xyz [m], freedom []).
   nu::float4*                      position_int   = new nu::float4 (1);                             // vec4(position (intermediate) [m], radiative energy [J]).
   nu::float4*                      velocity       = new nu::float4 (2);                             // vec4(velocity.xyz [m/s], friction [N*s/m]).
-  nu::float4*                      velocity_int   = new nu::float4 (3);                             // Velocity (intermediate) [m/s].
+  nu::float4*                      velocity_int   = new nu::float4 (3);                             // vec4(velocity_int.xyz [m/s], number of 1st + 2nd nearest neighbours []).
   nu::float4*                      acceleration   = new nu::float4 (4);                             // vec4(acceleration.xyz [m/s^2], mass [kg]).
 
   nu::float4*                      color          = new nu::float4 (5);                             // vec4(color.xyz [], alpha []).
