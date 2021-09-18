@@ -49,6 +49,7 @@ __kernel void thekernel(__global float4*    position,                           
     a = (float3)(0.0f, 0.0f, 0.0f);                                                   // Constraining acceleration...
   }
 
+  // FINDING SPINOR CENTER:
   for(j = 0; j < s_num; j++)
   {
     if(i == spinor[j])
@@ -57,6 +58,7 @@ __kernel void thekernel(__global float4*    position,                           
     }
   }
 
+  // FINDING SPINOR FRONTIER:
   for(j = 0; j < f_num; j++)
   {
     if(i == frontier[j])
@@ -68,7 +70,7 @@ __kernel void thekernel(__global float4*    position,                           
   // COMPUTING NEW POSITION:
   p_new = p + v*dt + 0.5f*a*dt*dt;                                                    // Computing Taylor's approximation...
         
-  // UPDATING INTERMEDIATE POSITION:
-  position[i].xyz = p_new;                                                            // Updating intermediate position...
+  // UPDATING KINEMATICS:
+  position[i].xyz = p_new;                                                            // Updating new position...
   velocity_int[i].xyz = v + a*dt;                                                     // Updating intermediate velocity...          
 }

@@ -40,7 +40,6 @@ __kernel void thekernel(__global float4*    position,                           
   float3        p_new             = position[n].xyz;                                  // Central node position (new). 
   float3        mate              = (float3)(0.0f, 0.0f, 0.0f);                       // Neighbour node position.
   float3        link              = (float3)(0.0f, 0.0f, 0.0f);                       // Neighbour link.
-  float3        direction         = (float3)(0.0f, 0.0f, 0.0f);                       // Neighbour link direction.
   float         L                 = 0.0f;                                             // Neighbour link length.
   float         R                 = 0.0f;                                             // Neighbour link resting length.
   float         S                 = 0.0f;                                             // Neighbour link strain.
@@ -71,8 +70,7 @@ __kernel void thekernel(__global float4*    position,                           
     S = L - R;                                                                        // Computing neighbour link strain...
     K = stiffness[j];                                                                 // Getting neighbour link stiffness...
     Fspring = -K*S;                                                                   // Computing elastic force on central node (as scalar)...
-    direction = normzero3(link);                                                      // Computing neighbour link displacement vector...
-
+    
     if(K > FLT_EPSILON)
     {
       Jacc += 0.5f*D*Fspring*R;                                                       // Computing radiated energy from central node...

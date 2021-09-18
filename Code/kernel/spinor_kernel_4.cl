@@ -47,7 +47,7 @@ __kernel void thekernel(__global float4*    position,                           
   
   float3        v_new             = (float3)(0.0f, 0.0f, 0.0f);                       // Central node velocity (new).
   float3        a_new             = (float3)(0.0f, 0.0f, 0.0f);                       // Central node acceleration (new).
-  float3        v_est             = position[n].xyz;                                  // Central node velocity (estimation).
+  float3        v_est             = velocity_est[n].xyz;                              // Central node velocity (estimation).
   float3        a_est             = (float3)(0.0f, 0.0f, 0.0f);                       // Central node acceleration (estimation).
   
   float3        Fe                = (float3)(0.0f, 0.0f, 0.0f);                       // Central node elastic force.  
@@ -75,7 +75,7 @@ __kernel void thekernel(__global float4*    position,                           
   float         K                 = 0.0f;                                             // Neighbour link stiffness.
   float         S                 = 0.0f;                                             // Neighbour link strain.
   float         L                 = 0.0f;                                             // Neighbour link length.
-  float         V_est                 = 0.0f;                                         // Neighbour dispatch estimation length.
+  float         V_est             = 0.0f;                                             // Neighbour dispatch estimation length.
   float         D                 = dispersion[0];                                    // Dispersion.
   float         dt                = dt_simulation[0];                                 // Simulation time step [s].
 
@@ -106,6 +106,7 @@ __kernel void thekernel(__global float4*    position,                           
     
     R = resting[j];                                                                   // Getting neighbour link resting length...
     S = L - R;                                                                        // Computing neighbour link strain...
+
     K = stiffness[j];                                                                 // Getting neighbour link stiffness...
     Fspring = -K*S;                                                                   // Computing elastic force on central node (as scalar)...
     
