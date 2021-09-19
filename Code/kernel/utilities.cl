@@ -4,20 +4,100 @@
 /// @brief    Some useful functions.
 /// @details  Norm, Colormap.
 
+// Normalizes a float3 vector. Returns a zero vector if its norm is too small.
 float3 normzero3 (float3 v)
 {
-    float3 v_norm;
+  float3 v_norm;                                                                  // Norm.
 
-    if(length(v) > 0.0f)
-    {
-      v_norm = normalize(v);                                                        // Computing neighbour link displacement vector...
-    }
-    else
-    {
-      v_norm = (float3)(0.0f, 0.0f, 0.0f);                                          // Considering overlapping zero-length link case...
-    }
+  if(length(v) > FLT_EPSILON)
+  {
+    v_norm = normalize(v);                                                        // Computing norm...
+  }
+  else
+  {
+    v_norm = (float3)(0.0f, 0.0f, 0.0f);                                          // Resetting norm...
+  }
 
-    return v_norm;
+  return v_norm;                                                                  // Returning norm...
+}
+
+// Adjusts float to zero if too small.
+float adjzero (float v)
+{
+  float v_adj;                                                                    // Adjusted value.
+
+  if(fabs(v) > FLT_EPSILON)
+  {
+    v_adj = v;                                                                    // Setting value...
+  }
+  else
+  {
+    v_adj = 0.0f;                                                                 // Retting value...
+  }
+
+  return v_adj;                                                                   // Returning adjusted value...
+}
+
+// Adjusts float3 components to zero if they are too small.
+float3 adjzero3 (float3 v)
+{
+  float3 v_adj;                                                                     // Adjusted float3.
+
+  v_adj.x = adjzero(v.x);                                                           // Adjusting component value...
+  v_adj.y = adjzero(v.y);                                                           // Adjusting component value...
+  v_adj.z = adjzero(v.z);                                                           // Adjusting component value...
+
+  return v_adj;                                                                     // Returning adjusted float3.
+}
+
+// Multiplies two float numbers. Returns zero if at least one of the two is too small, or is their product is too small.
+float mulzero (float a, float b)
+{
+  float c;                                                                          // Adjusted float product.
+
+  c = a*b;                                                                          // Computing product...
+
+  if(
+      (fabs(a) < FLT_EPSILON) ||
+      (fabs(b) < FLT_EPSILON) ||
+      (c < FLT_EPSILON)
+    )
+  {
+    c = 0.0f;                                                                       // Resetting product...
+  }
+
+  return c;                                                                         // Returning product...
+}
+
+// Multiplies a float scalar A by a float3 vector V. Sets the individual components of the product to zero if 
+// A is too small, or if the individual components of V are too small, or if the individual product components
+// are too small.
+float3 mulzero3 (float a, float3 v)
+{
+  float3 c;                                                                         // Adjusted float3 product.
+
+  c.x = mulzero(a, v.x);                                                            // Computing component product...
+  c.y = mulzero(a, v.y);                                                            // Computing component product...
+  c.z = mulzero(a, v.z);                                                            // Computing component product...
+
+  return c;                                                                         // Returning product...
+}
+
+float pownzero (float a, int n)
+{
+  float p;                                                                          // Power.
+
+  p = pown(a, n);                                                                   // Computing power...
+
+  if(
+      (a < FLT_EPSILON) ||
+      (p < FLT_EPSILON)
+    )
+  {
+    p = 0.0f;                                                                       // Resetting power...
+  }
+
+  return p;                                                                         // Returning power...
 }
 
 float3 colormap (float intensity)
