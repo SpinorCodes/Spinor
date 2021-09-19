@@ -37,47 +37,42 @@ __kernel void thekernel(__global float4*    position,                           
   //////////////////////////////////////////////////////////////////////////////////////
   ///////////////////////////////////// CELL VARIABLES /////////////////////////////////
   //////////////////////////////////////////////////////////////////////////////////////
-  float         freedom           = position[n].w;                                    // Central node freedom flag.
-  float3        p_new             = position[n].xyz;                                  // Central node position (new).
-  float3        v                 = velocity[n].xyz;                                  // Central node velocity.
-  
-  float3        v_int             = velocity_int[n].xyz;                              // Central node velocity (intermediate).
-  float3        a                 = acceleration[n].xyz;                              // Central node acceleration.
-  float         m                 = acceleration[n].w;                                // Central node mass.
-  
-  float3        v_new             = (float3)(0.0f, 0.0f, 0.0f);                       // Central node velocity (new).
-  float3        a_new             = (float3)(0.0f, 0.0f, 0.0f);                       // Central node acceleration (new).
+  float         freedom           = adjzero(position[n].w);                           // Central node freedom flag.
+  float3        p_new             = adjzero3(position[n].xyz);                        // Central node position (new).
+  float3        v                 = adjzero3(velocity[n].xyz);                        // Central node velocity.
+  float3        v_int             = adjzero3(velocity_int[n].xyz);                    // Central node velocity (intermediate).
   float3        v_est             = (float3)(0.0f, 0.0f, 0.0f);                       // Central node velocity (estimation).
+  float3        v_new             = (float3)(0.0f, 0.0f, 0.0f);                       // Central node velocity (new).
+  float3        a                 = adjzero3(acceleration[n].xyz);                    // Central node acceleration.
   float3        a_est             = (float3)(0.0f, 0.0f, 0.0f);                       // Central node acceleration (estimation).
-  
+  float3        a_new             = (float3)(0.0f, 0.0f, 0.0f);                       // Central node acceleration (new).
+  float         m                 = adjzero(acceleration[n].w);                       // Central node mass.
   float3        Fe                = (float3)(0.0f, 0.0f, 0.0f);                       // Central node elastic force.  
-  float3        Fv                = (float3)(0.0f, 0.0f, 0.0f);                       // Central node viscous force.
   float3        Fv_est            = (float3)(0.0f, 0.0f, 0.0f);                       // Central node viscous force (estimation).
   float3        F                 = (float3)(0.0f, 0.0f, 0.0f);                       // Central node total force.
   float3        F_new             = (float3)(0.0f, 0.0f, 0.0f);                       // Central node total force (new).
-  int           b_central         = velocity_int[n].w;                                // Number of 1st + 2nd nearest neighbours at central node.
+  int           b_central         = adjzero(velocity_int[n].w);                       // Number of 1st + 2nd nearest neighbours at central node.
   int           b_mate            = 0.0f;                                             // Number of 1st + 2nd nearest neighbours at neighbour node.
-  float         beta              = velocity[n].w;                                    // Central node friction.
-
+  float         beta              = adjzero(velocity[n].w);                           // Central node friction.
   float3        mate              = (float3)(0.0f, 0.0f, 0.0f);                       // Neighbour node position.
   float3        pace              = (float3)(0.0f, 0.0f, 0.0f);                       // Neighbour node velocity.
   float3        link              = (float3)(0.0f, 0.0f, 0.0f);                       // Neighbour link.
-  float3        dispatch          = (float3)(0.0f, 0.0f, 0.0f);                       // Neighbour dispatch.
+  float3        rate              = (float3)(0.0f, 0.0f, 0.0f);                       // Neighbour rate.
   float3        direction         = (float3)(0.0f, 0.0f, 0.0f);                       // Neighbour link direction.
   float         Fspring           = 0.0f;                                             // Spring force (scalar).
   float         Fdashpot          = 0.0f;                                             // Dashpot force (scalar).
   float3        Fviscous          = (float3)(0.0f, 0.0f, 0.0f);                       // Central node viscous force.
   float3        Fdirect           = (float3)(0.0f, 0.0f, 0.0f);                       // Central node direct force.
   float3        Fdissipative      = (float3)(0.0f, 0.0f, 0.0f);                       // Central node dissipative force.
-  float         Jacc_central      = velocity_est[n].w;                                // Central node radiated energy.
+  float         Jacc_central      = adjzero(velocity_est[n].w);                       // Central node radiated energy.
   float         Jacc_mate         = 0.0f;                                             // Neighbour node radiated energy.
   float         R                 = 0.0f;                                             // Neighbour link resting length.
   float         K                 = 0.0f;                                             // Neighbour link stiffness.
   float         S                 = 0.0f;                                             // Neighbour link strain.
   float         L                 = 0.0f;                                             // Neighbour link length.
-  float         V                 = 0.0f;                                             // Neighbour dispatch length.
-  float         D                 = dispersion[0];                                    // Dispersion.
-  float         dt                = dt_simulation[0];                                 // Simulation time step [s].
+  float         V                 = 0.0f;                                             // Neighbour rate length.
+  float         D                 = adjzero(dispersion[0]);                           // Dispersion.
+  float         dt                = adjzero(dt_simulation[0]);                        // Simulation time step [s].
 
   // COMPUTING STRIDE MINIMUM INDEX:
   if (i == 0)
@@ -93,49 +88,31 @@ __kernel void thekernel(__global float4*    position,                           
   for (j = j_min; j < j_max; j++)
   {
     k = neighbour[j];                                                                 // Computing neighbour index...
-    
-    mate = position[k].xyz;                                                           // Getting neighbour position...
-    link = p_new - mate;                                                              // Getting neighbour link vector...
-    L = length(link);                                                                 // Computing neighbour link length...
+    mate = adjzero3(position[k].xyz);                                                 // Getting neighbour position...
+    link = adjzero3(p_new - mate);                                                    // Computing neighbour link vector...
+    L = adjzero(length(link));                                                        // Computing neighbour link length...
     direction = normzero3(link);                                                      // Computing neighbour link displacement vector...
-
-    pace = velocity_int[k].xyz;                                                       // Getting neighbour velocity...
-    dispatch = dot(v_int.xyz - pace, direction);                                      // Computing neighbour dashpot dispatch vector...
-    V = length(dispatch);                                                             // Computing neighbour dispatch length...
-
-    printf("V = %f\n", V);
-
-    Jacc_mate = velocity_est[k].w;                                                    // Radiant energy of neighbour node...
-    
-    R = resting[j];                                                                   // Getting neighbour link resting length...
-    S = L - R;                                                                        // Computing neighbour link strain...
-    K = stiffness[j];                                                                 // Getting neighbour link stiffness...
-    
-    if(
-        (fabs(S) > FLT_EPSILON) &&
-        (fabs(K) > FLT_EPSILON)
-      )
-    {
-      Fspring = -K*S;                                                                 // Computing elastic force on central node (as scalar)...
-    }
-    else
-    {
-       Fspring = 0.0f;                                                                // Resetting elastic force on central node (as scalar)...
-    }
-    
-    Fe = Fspring*direction;                                                           // Computing elasting force on central node (as vector)...
-    
-    Fdirect += (1.0f - fabs(D))*Fe;                                                   // Building up total elastic force upon central node...
-    
-    Fdashpot = -beta*V;                                                               // Computing dashpot force on central node (as scalar)...
-    Fv = Fdashpot*direction;                                                          // Computing node dashpot force...
-    Fviscous += Fv;                                                                   // Building up total viscous force upon central node...
-
-    b_mate = velocity_int[k].w;                                                       // Getting number of 1st + 2nd nearest neighbours...
+    pace = adjzero3(velocity_int[k].xyz);                                             // Getting neighbour velocity...
+    rate = adjzero(dot(adjzero3(v_int - pace), direction));                           // Computing neighbour dashpot rate vector...
+    V = adjzero(length(rate));                                                        // Computing neighbour rate length...
+    Jacc_mate = adjzero(velocity_est[k].w);                                           // Radiant energy of neighbour node...
+    R = adjzero(resting[j]);                                                          // Getting neighbour link resting length...
+    S = adjzero(L - R);                                                               // Computing neighbour link strain...
+    K = adjzero(stiffness[j]);                                                        // Getting neighbour link stiffness...
+    Fspring = mulzero(K, -S);                                                         // Computing elastic force on central node (as scalar)...
+    Fe = mulzero(Fspring, direction);                                                 // Computing elasting force on central node (as vector)...
+    Fdirect += mulzero3(adjzero(1.0f - fabs(D)), Fe);                                 // Building up total elastic force upon central node...
+    Fdashpot = mulzero(beta, -V);                                                     // Computing dashpot force on central node (as scalar)...
+    Fviscous += mulzero3(Fdashpot, direction);                                        // Building up total viscous force upon central node...
+    b_mate = adjzero(velocity_int[k].w);                                              // Getting number of 1st + 2nd nearest neighbours...
 
     if(K > FLT_EPSILON)
     {
       Fdissipative += ((Jacc_central/b_central + Jacc_mate/b_mate)/R)*direction;      // Building up force from central node radiated energy...
+    }
+    else
+    {
+      Fdissipative = (float3)(0.0f, 0.0f, 0.0f);                                      // Resetting force from central node radiated energy...
     }
     
     if (color[j].w != 0.0f)
@@ -144,8 +121,7 @@ __kernel void thekernel(__global float4*    position,                           
     }
   }
 
-  //F  = Fdirect + Fdissipative + Fviscous;                                             // Computing node total force...
-  F  = Fdirect + Fdissipative;
+  F  = Fdirect + Fdissipative + Fviscous;                                             // Computing node total force...
   a_est  = F/m;                                                                       // Computing new acceleration estimation...
   v_est = v + 0.5f*(a + a_est)*dt;                                                    // Computing new velocity estimation...
 
