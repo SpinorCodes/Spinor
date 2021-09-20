@@ -60,7 +60,7 @@ float mulzero (float a, float b)
   if(
       (fabs(a) < FLT_EPSILON) ||
       (fabs(b) < FLT_EPSILON) ||
-      (c < FLT_EPSILON)
+      (fabs(c) < FLT_EPSILON)
     )
   {
     c = 0.0f;                                                                       // Resetting product...
@@ -90,14 +90,37 @@ float pownzero (float a, int n)
   p = pown(a, n);                                                                   // Computing power...
 
   if(
-      (a < FLT_EPSILON) ||
-      (p < FLT_EPSILON)
+      (fabs(a) < FLT_EPSILON) ||
+      (abs(n) < FLT_EPSILON) ||
+      (fabs(p) < FLT_EPSILON)
     )
   {
     p = 0.0f;                                                                       // Resetting power...
   }
 
   return p;                                                                         // Returning power...
+}
+
+// Computes the reciprocal of a float number.
+float recipzero (float a)
+{
+  float b;
+
+  if(fabs(a) < FLT_EPSILON)
+  {
+    b = FLT_MAX;
+  }
+  else
+  {
+    b = 1.0f/a;
+
+    if(fabs(b) < FLT_EPSILON)
+    {
+      b = 0.0f;
+    }
+  }
+
+  return b;
 }
 
 float3 colormap (float intensity)
