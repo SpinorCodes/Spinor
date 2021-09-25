@@ -91,7 +91,6 @@ float pownzero (float a, int n)
 
   if(
       (fabs(a) < FLT_EPSILON) ||
-      (abs(n) < FLT_EPSILON) ||
       (fabs(p) < FLT_EPSILON)
     )
   {

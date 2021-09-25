@@ -50,12 +50,16 @@ __kernel void thekernel(__global float4*    position,                           
     a = (float3)(0.0f, 0.0f, 0.0f);                                                   // Constraining acceleration...
   }
 
+  // COMPUTING NEW POSITION:
+  p_new = p + mulzero3(dt, v) + mulzero3(0.5f, mulzero3(pownzero(dt, 2), a));         // Computing new position...
+  v_int = v + mulzero3(dt, a);                                                        // Computing intermediate velocity...
+
   // FINDING SPINOR:
   for(j = 0; j < s_num; j++)
   {
     if(i == spinor[j])
     {
-      p = spinor_pos[j].xyz;
+      p_new = spinor_pos[j].xyz;
     }
   }
 
@@ -64,13 +68,9 @@ __kernel void thekernel(__global float4*    position,                           
   {
     if(i == frontier[j])
     {
-      p = frontier_pos[j].xyz;
+      p_new = frontier_pos[j].xyz;
     }
   }
-
-  // COMPUTING NEW POSITION:
-  p_new = p + mulzero3(dt, v) + mulzero3(0.5f, mulzero3(pownzero(dt, 2), a));         // Computing new position...
-  v_int = v + mulzero3(dt, a);                                                        // Computing intermediate velocity...
 
   // UPDATING KINEMATICS:
   position[i].xyz = p_new;                                                            // Updating new position...

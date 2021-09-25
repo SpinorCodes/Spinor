@@ -40,7 +40,7 @@ __kernel void thekernel(__global float4*    position,                           
   float         freedom           = adjzero(position[n].w);                           // Central node freedom flag.
   float3        p_new             = adjzero3(position[n].xyz);                        // Central node position (new).
   float3        v                 = adjzero3(velocity[n].xyz);                        // Central node velocity.
-  float3        v_est             = (float3)(0.0f, 0.0f, 0.0f);                       // Central node velocity (estimation).
+  float3        v_est             = adjzero3(velocity_est[n].xyz);;                   // Central node velocity (estimation).
   float3        v_new             = (float3)(0.0f, 0.0f, 0.0f);                       // Central node velocity (new).
   float3        a                 = adjzero3(acceleration[n].xyz);                    // Central node acceleration.
   float3        a_new             = (float3)(0.0f, 0.0f, 0.0f);                       // Central node acceleration (new).
@@ -51,7 +51,7 @@ __kernel void thekernel(__global float4*    position,                           
   int           b_mate            = 0.0f;                                             // Number of 1st + 2nd nearest neighbours at neighbour node.
   float         beta              = adjzero(velocity[n].w);                           // Central node friction.
   float3        mate              = (float3)(0.0f, 0.0f, 0.0f);                       // Neighbour node position.
-  float3        pace_est          = (float3)(0.0f, 0.0f, 0.0f);                       // Neighbour node velocity (estimation).
+  float3        pace              = (float3)(0.0f, 0.0f, 0.0f);                       // Neighbour node velocity.
   float3        link              = (float3)(0.0f, 0.0f, 0.0f);                       // Neighbour link.
   float3        rate_est          = (float3)(0.0f, 0.0f, 0.0f);                       // Neighbour rate (estimation).
   float3        direction         = (float3)(0.0f, 0.0f, 0.0f);                       // Neighbour link direction.
@@ -68,7 +68,7 @@ __kernel void thekernel(__global float4*    position,                           
   float         K                 = 0.0f;                                             // Neighbour link stiffness.
   float         S                 = 0.0f;                                             // Neighbour link strain.
   float         L                 = 0.0f;                                             // Neighbour link length.
-  float         V_est             = 0.0f;                                             // Neighbour rate length (estimation).
+  float         V_est             = 0.0f;                                             // Neighbour rate strain (estimation).
   float         D                 = adjzero(dispersion[0]);                           // Dispersion.
   float         dt                = adjzero(dt_simulation[0]);                        // Simulation time step [s].
 
@@ -90,9 +90,8 @@ __kernel void thekernel(__global float4*    position,                           
     link = adjzero3(p_new - mate);                                                    // Computing neighbour link vector...
     L = adjzero(length(link));                                                        // Computing neighbour link length...
     direction = normzero3(link);                                                      // Computing neighbour link displacement vector...
-    pace_est = adjzero3(velocity_est[k].xyz);                                         // Getting neighbour velocity...
-    rate_est = adjzero(dot(adjzero3(v_est - pace_est), direction));                   // Computing neighbour dashpot rate vector...
-    V_est = adjzero(length(rate_est));                                                // Computing neighbour rate length...
+    rate_est = adjzero3(velocity_est[k].xyz);                                         // Getting neighbour velocity (estimation)...
+    V_est = adjzero(dot(adjzero3(v_est - rate_est), direction));                      // Computing neighbour rate (estimation)...
     Jacc_mate = adjzero(velocity_est[k].w);                                           // Radiant energy of neighbour node...
     R = adjzero(resting[j]);                                                          // Getting neighbour link resting length...
     S = adjzero(L - R);                                                               // Computing neighbour link strain...
@@ -109,10 +108,6 @@ __kernel void thekernel(__global float4*    position,                           
       JC = mulzero(Jacc_central, recipzero(b_central));                               // Computing radiated energy density (central)...
       JN = mulzero(Jacc_mate, recipzero(b_mate));                                     // Computing radiated energy density (neighbour)...
       Fdissipative += mulzero3(mulzero(JC + JN, recipzero(R)), direction);            // Building up force from central node radiated energy...
-    }
-    else
-    {
-      Fdissipative = (float3)(0.0f, 0.0f, 0.0f);                                      // Resetting force from central node radiated energy...
     }
     
     if (color[j].w != 0.0f)

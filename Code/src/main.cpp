@@ -131,12 +131,12 @@ int main ()
   float                            pz_new;
 
   // SIMULATION VARIABLES:
-  float                            safety_CFL     = 1.0f;                                           // Courant-Friedrichs-Lewy safety coefficient [].
+  float                            safety_CFL     = 0.5f;                                           // Courant-Friedrichs-Lewy safety coefficient [].
   int                              N              = 3;                                              // Number of spatial dimensions of the MSM [].
   float                            rho            = 1E+2f;                                          // Mass density [kg/m^3].
-  float                            E              = 1E+8f;                                          // Young's modulus [Pa];
-  float                            nu             = 0.0f;                                           // Poisson's ratio [];
-  float                            beta           = 1E+1f;                                          // Damping [kg*s*m].
+  float                            E              = 1E+4f;                                          // Young's modulus [Pa];
+  float                            nu             = 0.25f;                                          // Poisson's ratio [];
+  float                            beta           = 0.2E+0f;                                        // Damping [kg*s*m].
   float                            R              = 2;                                              // Particle's radius [#cells].
 
   float                            ds;                                                              // Cell size [m].
