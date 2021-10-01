@@ -131,11 +131,11 @@ int main ()
   float                            pz_new;
 
   // SIMULATION VARIABLES:
-  float                            safety_CFL     = 1.0f;                                           // Courant-Friedrichs-Lewy safety coefficient [].
+  float                            safety_CFL     = 0.5f;                                           // Courant-Friedrichs-Lewy safety coefficient [].
   int                              N              = 3;                                              // Number of spatial dimensions of the MSM [].
-  float                            rho            = 1.0E+4f;                                        // Mass density [kg/m^3].
+  float                            rho            = 1.0E+2f;                                        // Mass density [kg/m^3].
   float                            E              = 1.0E+2f;                                        // Young's modulus [Pa];
-  float                            nu             = 0.499f;                                         // Poisson's ratio [];
+  float                            nu             = -0.99f;                                         // Poisson's ratio [];
   float                            beta           = 1.0E+1f;                                        // Damping [kg*s*m].
   float                            R              = 2;                                              // Particle's radius [#cells].
 
@@ -522,9 +522,9 @@ int main ()
         py                      = frontier_pos->data[i].y;
         pz                      = frontier_pos->data[i].z;
 
-        px_new                  = px*0.9999f;
-        py_new                  = py*0.9999f;
-        pz_new                  = pz*0.9999f;
+        px_new                  = px*0.9995f;
+        py_new                  = py*0.9995f;
+        pz_new                  = pz*0.9995f;
 
         frontier_pos->data[i].x = px_new;
         frontier_pos->data[i].y = py_new;
@@ -540,9 +540,9 @@ int main ()
         py                      = frontier_pos->data[i].y;
         pz                      = frontier_pos->data[i].z;
 
-        px_new                  = px/0.9999f;
-        py_new                  = py/0.9999f;
-        pz_new                  = pz/0.9999f;
+        px_new                  = px/0.9995f;
+        py_new                  = py/0.9995f;
+        pz_new                  = pz/0.9995f;
 
         frontier_pos->data[i].x = px_new;
         frontier_pos->data[i].y = py_new;
