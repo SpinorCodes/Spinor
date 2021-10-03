@@ -418,7 +418,7 @@ int main ()
     gl->plot (shader_1);                                                                            // Plotting shared arguments...
     gl->refresh ();                                                                                 // Refreshing gl...
 
-    if(gl->button_DPAD_LEFT)
+    if(gl->button_DPAD_LEFT || gl->key_LEFT)
     {
       for(i = 0; i < (GLuint)spinor_num->data[0]; i++)
       {
@@ -433,7 +433,7 @@ int main ()
       }
     }
 
-    if(gl->button_DPAD_RIGHT)
+    if(gl->button_DPAD_RIGHT || gl->key_RIGHT)
     {
       for(i = 0; i < (GLuint)spinor_num->data[0]; i++)
       {
@@ -448,7 +448,7 @@ int main ()
       }
     }
 
-    if(gl->button_DPAD_DOWN)
+    if(gl->button_DPAD_DOWN || gl->key_DOWN)
     {
       for(i = 0; i < (GLuint)spinor_num->data[0]; i++)
       {
@@ -463,7 +463,7 @@ int main ()
       }
     }
 
-    if(gl->button_DPAD_UP)
+    if(gl->button_DPAD_UP || gl->key_UP)
     {
       for(i = 0; i < (GLuint)spinor_num->data[0]; i++)
       {
@@ -478,7 +478,7 @@ int main ()
       }
     }
 
-    if(gl->button_LEFT_BUMPER)
+    if(gl->button_LEFT_BUMPER || gl->key_O)
     {
       for(i = 0; i < (GLuint)spinor_num->data[0]; i++)
       {
@@ -496,7 +496,7 @@ int main ()
       }
     }
 
-    if(gl->button_RIGHT_BUMPER)
+    if(gl->button_RIGHT_BUMPER || gl->key_P)
     {
       for(i = 0; i < (GLuint)spinor_num->data[0]; i++)
       {
@@ -514,7 +514,7 @@ int main ()
       }
     }
 
-    if(gl->button_SQUARE)
+    if(gl->button_SQUARE || gl->key_Q)
     {
       for(i = 0; i < (GLuint)frontier_num->data[0]; i++)
       {
@@ -532,7 +532,7 @@ int main ()
       }
     }
 
-    if(gl->button_CIRCLE)
+    if(gl->button_CIRCLE || gl->key_W)
     {
       for(i = 0; i < (GLuint)frontier_num->data[0]; i++)
       {
@@ -550,7 +550,7 @@ int main ()
       }
     }
 
-    if(gl->button_TRIANGLE)
+    if(gl->button_TRIANGLE || gl->key_R)
     {
       position->data     = initial_position;                                                        // Restoring backup...
       velocity->data     = initial_velocity;                                                        // Restoring backup...
@@ -568,7 +568,7 @@ int main ()
       cl->write (16);                                                                               // Writing data...
     }
 
-    if(gl->button_CROSS)
+    if(gl->button_CROSS || gl->key_ESCAPE)
     {
       gl->close ();                                                                                 // Closing gl...
     }
