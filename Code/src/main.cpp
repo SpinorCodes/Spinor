@@ -134,10 +134,10 @@ int main ()
   float                            safety_CFL     = 0.5f;                                           // Courant-Friedrichs-Lewy safety coefficient [].
   int                              N              = 3;                                              // Number of spatial dimensions of the MSM [].
   float                            rho            = 1.0E+2f;                                        // Mass density [kg/m^3].
-  float                            E              = 1.0E+2f;                                        // Young's modulus [Pa];
+  float                            E              = 1.0E+1f;                                        // Young's modulus [Pa];
   float                            nu             = -0.99f;                                         // Poisson's ratio [];
-  float                            beta           = 1.0E+1f;                                        // Damping [kg*s*m].
-  float                            R              = 2;                                              // Particle's radius [#cells].
+  float                            beta           = 2.0E+0f;                                        // Damping [kg*s*m].
+  float                            R              = 1;                                              // Particle's radius [#cells].
 
   float                            ds;                                                              // Cell size [m].
   float                            dV;                                                              // Cell volume [m^3].
@@ -211,24 +211,21 @@ int main ()
     acceleration->data.push_back ({0.0f, 0.0f, 0.0f, dm});                                          // Setting acceleration...
 
     // Finding spinor:
-    /*if(
-       (0 < sqrt (
-                  pow (position->data[i].x, 2) +
-                  pow (position->data[i].y, 2) +
-                  pow (position->data[i].z, 2)
-                 )) &&
-       (sqrt (
-              pow (position->data[i].x, 2) +
-              pow (position->data[i].y, 2) +
-              pow (position->data[i].z, 2)
-             ) < (sqrt (3.0f)*ds*R + 0.01f)
-       )
-       )
-     */
     if(
-       ((-0.001f - ds) < position->data[i].x) &&
-       (position->data[i].x < (0.001f + ds))
+       sqrt (
+             pow (position->data[i].x, 2) +
+             pow (position->data[i].y, 2) +
+             pow (position->data[i].z, 2)
+            ) < (sqrt (3.0f)*ds*R + 0.01f)
       )
+    /*if(
+       ((-0.01f - 3*ds) < position->data[i].x) &&
+       (position->data[i].x < (0.01f + 3*ds)) &&
+       ((-0.01f - 3*ds) < position->data[i].y) &&
+       (position->data[i].y < (0.01f + 3*ds)) &&
+       ((-0.01f - 3*ds) < position->data[i].z) &&
+       (position->data[i].z < (0.01f + 3*ds))
+       )*/
     {
       spinor->data.push_back (i);                                                                   // Setting spinor index...
       spinor_pos->data.push_back (position->data[i]);                                               // Setting initial spinor's position...
@@ -275,8 +272,8 @@ int main ()
   //boundary.push_back (EFGH);                                                                        // Setting boundary surface...
   boundary.push_back (ADHE);                                                                        // Setting boundary surface...
   boundary.push_back (BCGF);                                                                        // Setting boundary surface...
-  //boundary.push_back (ABFE);                                                                        // Setting boundary surface...
-  //boundary.push_back (DCGH);                                                                        // Setting boundary surface...
+  boundary.push_back (ABFE);                                                                        // Setting boundary surface...
+  boundary.push_back (DCGH);                                                                        // Setting boundary surface...
 
   for(i = 0; i < boundary.size (); i++)
   {
@@ -486,9 +483,9 @@ int main ()
         py                    = spinor_pos->data[i].y;
         pz                    = spinor_pos->data[i].z;
 
-        px_new                = px*0.9999f;
-        py_new                = py*0.9999f;
-        pz_new                = pz*0.9999f;
+        px_new                = px*0.999f;
+        py_new                = py*0.999f;
+        pz_new                = pz*0.999f;
 
         spinor_pos->data[i].x = px_new;
         spinor_pos->data[i].y = py_new;
@@ -504,9 +501,9 @@ int main ()
         py                    = spinor_pos->data[i].y;
         pz                    = spinor_pos->data[i].z;
 
-        px_new                = px/0.9999f;
-        py_new                = py/0.9999f;
-        pz_new                = pz/0.9999f;
+        px_new                = px/0.999f;
+        py_new                = py/0.999f;
+        pz_new                = pz/0.999f;
 
         spinor_pos->data[i].x = px_new;
         spinor_pos->data[i].y = py_new;
