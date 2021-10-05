@@ -393,6 +393,13 @@ int main ()
   std::cout << std::endl;                                                                           // Printing message...
   std::cout << std::endl;                                                                           // Printing message...
 
+  IMGUI_CHECKVERSION ();
+  ImGui::CreateContext ();
+  ImGuiIO&io = ImGui::GetIO (); (void)io;
+  ImGui::StyleColorsDark ();
+  ImGui_ImplGlfw_InitForOpenGL (gl->glfw_window, true);
+  ImGui_ImplOpenGL3_Init ("#version 460");
+
   ////////////////////////////////////////////////////////////////////////////////////////////////////
   ////////////////////////////////////////// APPLICATION LOOP ////////////////////////////////////////
   ////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -409,10 +416,23 @@ int main ()
     cl->release ();                                                                                 // Releasing variables...
 
     gl->clear ();                                                                                   // Clearing gl...
+
+    ImGui_ImplOpenGL3_NewFrame ();
+    ImGui_ImplGlfw_NewFrame ();
+    ImGui::NewFrame ();
+
     gl->poll_events ();                                                                             // Polling gl events...
     gl->mouse_navigation (ms_orbit_rate, ms_pan_rate, ms_decaytime);                                // Mouse navigation...
     gl->gamepad_navigation (gmp_orbit_rate, gmp_pan_rate, gmp_decaytime, gmp_deadzone);             // Gamepad navigation...
     gl->plot (shader_1);                                                                            // Plotting shared arguments...
+
+    ImGui::Begin ("MyMenu");
+    ImGui::Text ("Hello world!");
+    ImGui::End ();
+
+    ImGui::Render ();
+    ImGui_ImplOpenGL3_RenderDrawData (ImGui::GetDrawData ());
+
     gl->refresh ();                                                                                 // Refreshing gl...
 
     if(gl->button_DPAD_LEFT || gl->key_LEFT)
@@ -572,6 +592,10 @@ int main ()
 
     cl->get_toc ();                                                                                 // Getting "toc" [us]...
   }
+
+  ImGui_ImplOpenGL3_Shutdown ();
+  ImGui_ImplGlfw_Shutdown ();
+  ImGui::DestroyContext ();
 
   ////////////////////////////////////////////////////////////////////////////////////////////////////
   /////////////////////////////////////////////// CLEANUP ////////////////////////////////////////////
