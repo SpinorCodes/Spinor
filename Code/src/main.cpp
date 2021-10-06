@@ -393,13 +393,6 @@ int main ()
   std::cout << std::endl;                                                                           // Printing message...
   std::cout << std::endl;                                                                           // Printing message...
 
-  IMGUI_CHECKVERSION ();
-  ImGui::CreateContext ();
-  ImGuiIO&io = ImGui::GetIO (); (void)io;
-  ImGui::StyleColorsDark ();
-  ImGui_ImplGlfw_InitForOpenGL (gl->glfw_window, true);
-  ImGui_ImplOpenGL3_Init ("#version 460");
-
   ////////////////////////////////////////////////////////////////////////////////////////////////////
   ////////////////////////////////////////// APPLICATION LOOP ////////////////////////////////////////
   ////////////////////////////////////////////////////////////////////////////////////////////////////
