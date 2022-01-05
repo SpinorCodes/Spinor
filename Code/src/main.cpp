@@ -202,12 +202,12 @@ void data_initialization ()
              pow (position->data[i].y, 2) +
              pow (position->data[i].z, 2)
             ) &&
-       (sqrt (3.0f)*ds*(R + 1)) <
-       sqrt (
-             pow (position->data[i].x, 2) +
-             pow (position->data[i].y, 2) +
-             pow (position->data[i].z, 2)
-            )
+       (sqrt (
+              pow (position->data[i].x, 2) +
+              pow (position->data[i].y, 2) +
+              pow (position->data[i].z, 2)
+             ) <
+        sqrt (3.0f)*ds*(R + 1))
       )
     {
       spinor->data.push_back (i);                                                                    // Setting spinor index...
