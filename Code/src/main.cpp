@@ -6,7 +6,7 @@
 #define INTEROP        true                                                                          // "true" = use OpenGL-OpenCL interoperability.
 #define SX             800                                                                           // Window x-size [px].
 #define SY             600                                                                           // Window y-size [px].
-#define NAME           "Neutrino - Spinor"                                                           // Window name.
+#define NM             "Neutrino - Spinor"                                                           // Window name.
 #define OX             0.0f                                                                          // x-axis orbit initial rotation.
 #define OY             0.0f                                                                          // y-axis orbit initial rotation.
 #define PX             0.0f                                                                          // x-axis pan initial translation.
@@ -46,111 +46,122 @@
 #include "nu.hpp"                                                                                    // Neutrino header file.
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////////
-////////////////////////////////////////// GLOBAL VARIABLES ///////////////////////////////////////////
+//////////////////////////////////////////////// MAIN /////////////////////////////////////////////////
 ///////////////////////////////////////////////////////////////////////////////////////////////////////
-// OPENGL:
-nu::opengl*                      gl             = new nu::opengl (NAME, SX, SY, OX, OY, PX, PY, PZ); // OpenGL context.
-nu::shader*                      shader_1       = new nu::shader ();                                 // OpenGL shader program.
-nu::projection_mode              proj_mode      = nu::MONOCULAR;                                     // OpenGL projection mode.
-
-// OPENCL:
-nu::opencl*                      cl             = new nu::opencl (nu::GPU);                          // OpenCL context.
-nu::kernel*                      kernel_1       = new nu::kernel ();                                 // OpenCL kernel array.
-nu::kernel*                      kernel_2       = new nu::kernel ();                                 // OpenCL kernel array.
-nu::kernel*                      kernel_3       = new nu::kernel ();                                 // OpenCL kernel array.
-nu::kernel*                      kernel_4       = new nu::kernel ();                                 // OpenCL kernel array.
-
-nu::float4*                      position       = new nu::float4 (0);                                // vec4(position.xyz [m], freedom []).
-nu::float4*                      velocity       = new nu::float4 (1);                                // vec4(velocity.xyz [m/s], friction [N*s/m]).
-nu::float4*                      velocity_int   = new nu::float4 (2);                                // vec4(velocity.xyz (intermediate) [m/s], number of 1st + 2nd nearest neighbours []).
-nu::float4*                      velocity_est   = new nu::float4 (3);                                // vec4(velocity.xyz (estimation) [m/s], radiative energy [J]).
-nu::float4*                      acceleration   = new nu::float4 (4);                                // vec4(acceleration.xyz [m/s^2], mass [kg]).
-
-nu::float4*                      color          = new nu::float4 (5);                                // vec4(color.xyz [], alpha []).
-nu::float1*                      stiffness      = new nu::float1 (6);                                // Stiffness.
-nu::float1*                      resting        = new nu::float1 (7);                                // Resting.
-nu::int1*                        central        = new nu::int1 (8);                                  // Central nodes.
-nu::int1*                        neighbour      = new nu::int1 (9);                                  // Neighbour.
-nu::int1*                        offset         = new nu::int1 (10);                                 // Offset.
-
-nu::int1*                        spinor         = new nu::int1 (11);                                 // Spinor.
-nu::int1*                        spinor_num     = new nu::int1 (12);                                 // Spinor cells number.
-nu::float4*                      spinor_pos     = new nu::float4 (13);                               // Spinor cells position.
-nu::int1*                        frontier       = new nu::int1 (14);                                 // Spacetime frontier.
-nu::int1*                        frontier_num   = new nu::int1 (15);                                 // Frontier nodes number.
-nu::float4*                      frontier_pos   = new nu::float4 (16);                               // Frontier nodes position.
-
-nu::float1*                      dispersion     = new nu::float1 (17);                               // Dispersion fraction [-0.5...1.0].
-nu::float1*                      dt             = new nu::float1 (18);                               // Time step [s].
-
-// IMGUI:
-nu::imgui*                       hud            = new nu::imgui ();                                  // ImGui context.
-
-// MESH:
-nu::mesh*                        spacetime      = new nu::mesh (MESH);                               // Spacetime mesh.
-size_t                           nodes          = 0;                                                 // Number of nodes.
-size_t                           elements       = 0;                                                 // Number of elements.
-size_t                           groups         = 0;                                                 // Number of groups.
-size_t                           neighbours     = 0;                                                 // Number of neighbours.
-size_t                           frontier_nodes = 0;                                                 // Number of frontier nodes.
-int                              ABCD           = 13;                                                // "ABCD" surface tag.
-int                              EFGH           = 14;                                                // "EFGH" surface tag.
-int                              ADHE           = 15;                                                // "ADHE" surface tag.
-int                              BCGF           = 16;                                                // "BCGF" surface tag.
-int                              ABFE           = 17;                                                // "ABFE" surface tag.
-int                              DCGH           = 18;                                                // "DCGH" surface tag.
-int                              VOLUME         = 1;                                                 // Entire volume tag.
-std::vector<int>                 boundary;                                                           // Boundary array.
-float                            px;
-float                            py;
-float                            pz;
-float                            px_new;
-float                            py_new;
-float                            pz_new;
-
-// SIMULATION VARIABLES:
-float                            safety_CFL     = 0.5f;                                              // Courant-Friedrichs-Lewy safety coefficient [].
-int                              N              = 3;                                                 // Number of spatial dimensions of the MSM [].
-float                            rho            = 1.0E-2f;                                           // Mass density [kg/m^3].
-float                            E              = 1.0E-2f;                                           // Young's modulus [Pa];
-float                            ni             = 0.2f;                                              // Poisson's ratio [];
-float                            beta           = 1.0E-4f;                                           // Damping [kg*s*m].
-int                              R              = 3;                                                 // Particle's radius [#cells].
-
-float                            ds;                                                                 // Cell size [m].
-float                            dV;                                                                 // Cell volume [m^3].
-float                            k;                                                                  // Spring constant [N/m].
-float                            K;                                                                  // Bulk modulus [Pa].
-float                            v_p;                                                                // Speed of P-waves [m/s].
-float                            v_s;                                                                // Speed of S-waves [m/s].
-float                            dm;                                                                 // Node mass [kg].
-float                            lambda;                                                             // Lamé 1st parameter [Pa].
-float                            mu;                                                                 // Lamé 2nd parameter (S-wave modulus) [Pa].
-float                            M;                                                                  // P-wave modulus [Pa].
-float                            B;                                                                  // Dispersive pressure [Pa].
-float                            Q;                                                                  // Dispersive to direct momentum flow ratio [].
-float                            C;                                                                  // Interaction momentum carriers pressure [Pa].
-float                            D;                                                                  // Dispersion fraction [-0.5...1.0].
-float                            dt_CFL;                                                             // Courant-Friedrichs-Lewy critical time step [s].
-float                            dt_SIM;                                                             // Simulation time step [s].
-
-// BACKUP:
-std::vector<nu_float4_structure> initial_position;                                                   // Backing up initial data...
-std::vector<nu_float4_structure> initial_velocity;                                                   // Backing up initial data...
-std::vector<nu_float4_structure> initial_velocity_int;                                               // Backing up initial data...
-std::vector<nu_float4_structure> initial_velocity_est;                                               // Backing up initial data...
-std::vector<nu_float4_structure> initial_acceleration;                                               // Backing up initial data...
-std::vector<nu_float4_structure> initial_spinor_pos;                                                 // Backing up initial data...
-std::vector<nu_float4_structure> initial_frontier_pos;                                               // Backing up initial data...
-
-///////////////////////////////////////////////////////////////////////////////////////////////////////
-///////////////////////////////////////// DATA INITIALIZATION /////////////////////////////////////////
-///////////////////////////////////////////////////////////////////////////////////////////////////////
-void data_initialization ()
+int main ()
 {
+  // MOUSE PARAMETERS:
+  float                            ms_orbit_rate  = 1.0f;                                            // Orbit rotation rate [rev/s].
+  float                            ms_pan_rate    = 5.0f;                                            // Pan translation rate [m/s].
+  float                            ms_decaytime   = 1.25f;                                           // Pan LP filter decay time [s].
+
+  // GAMEPAD PARAMETERS:
+  float                            gmp_orbit_rate = 1.0f;                                            // Orbit angular rate coefficient [rev/s].
+  float                            gmp_pan_rate   = 1.0f;                                            // Pan translation rate [m/s].
+  float                            gmp_decaytime  = 1.25f;                                           // Low pass filter decay time [s].
+  float                            gmp_deadzone   = 0.30f;                                           // Gamepad joystick deadzone [0...1].
+
   // INDEXES:
-  GLuint i;                                                                                          // Index [#].
-  GLuint j;                                                                                          // Index [#].
+  GLuint                           i;                                                                // Index [#].
+  GLuint                           j;                                                                // Index [#].
+  GLuint                           j_min;                                                            // Index [#].
+  GLuint                           j_max;                                                            // Index [#].
+
+  // OPENGL:
+  nu::opengl*                      gl             = new nu::opengl (NM, SX, SY, OX, OY, PX, PY, PZ); // OpenGL context.
+  nu::shader*                      shader_1       = new nu::shader ();                               // OpenGL shader program.
+  nu::projection_mode              proj_mode      = nu::MONOCULAR;                                   // OpenGL projection mode.
+
+  // OPENCL:
+  nu::opencl*                      cl             = new nu::opencl (nu::GPU);                        // OpenCL context.
+  nu::kernel*                      kernel_1       = new nu::kernel ();                               // OpenCL kernel array.
+  nu::kernel*                      kernel_2       = new nu::kernel ();                               // OpenCL kernel array.
+  nu::kernel*                      kernel_3       = new nu::kernel ();                               // OpenCL kernel array.
+  nu::kernel*                      kernel_4       = new nu::kernel ();                               // OpenCL kernel array.
+
+  nu::float4*                      color          = new nu::float4 (0);                              // vec4(color.xyz [], alpha []).
+
+  nu::float4*                      position       = new nu::float4 (1);                              // vec4(position.xyz [m], freedom []).
+  nu::float4*                      velocity       = new nu::float4 (2);                              // vec4(velocity.xyz [m/s], friction [N*s/m]).
+  nu::float4*                      velocity_int   = new nu::float4 (3);                              // vec4(velocity.xyz (intermediate) [m/s], number of 1st + 2nd nearest neighbours []).
+  nu::float4*                      velocity_est   = new nu::float4 (4);                              // vec4(velocity.xyz (estimation) [m/s], radiative energy [J]).
+  nu::float4*                      acceleration   = new nu::float4 (5);                              // vec4(acceleration.xyz [m/s^2], mass [kg]).
+
+  nu::float1*                      stiffness      = new nu::float1 (6);                              // Stiffness.
+  nu::float1*                      resting        = new nu::float1 (7);                              // Resting.
+  nu::int1*                        central        = new nu::int1 (8);                                // Central nodes.
+  nu::int1*                        neighbour      = new nu::int1 (9);                                // Neighbour.
+  nu::int1*                        offset         = new nu::int1 (10);                               // Offset.
+
+  nu::int1*                        spinor         = new nu::int1 (11);                               // Spinor.
+  nu::int1*                        spinor_num     = new nu::int1 (12);                               // Spinor cells number.
+  nu::float4*                      spinor_pos     = new nu::float4 (13);                             // Spinor cells position.
+  nu::int1*                        frontier       = new nu::int1 (14);                               // Spacetime frontier.
+  nu::int1*                        frontier_num   = new nu::int1 (15);                               // Frontier nodes number.
+  nu::float4*                      frontier_pos   = new nu::float4 (16);                             // Frontier nodes position.
+
+  nu::float1*                      dispersion     = new nu::float1 (17);                             // Dispersion fraction [-0.5...1.0].
+  nu::float1*                      dt             = new nu::float1 (18);                             // Time step [s].
+
+  // IMGUI:
+  nu::imgui*                       hud            = new nu::imgui ();                                // ImGui context.
+
+  // MESH:
+  nu::mesh*                        spacetime      = new nu::mesh (MESH);                             // Spacetime mesh.
+  size_t                           nodes          = 0;                                               // Number of nodes.
+  size_t                           elements       = 0;                                               // Number of elements.
+  size_t                           groups         = 0;                                               // Number of groups.
+  size_t                           neighbours     = 0;                                               // Number of neighbours.
+  size_t                           frontier_nodes = 0;                                               // Number of frontier nodes.
+  int                              ABCD           = 13;                                              // "ABCD" surface tag.
+  int                              EFGH           = 14;                                              // "EFGH" surface tag.
+  int                              ADHE           = 15;                                              // "ADHE" surface tag.
+  int                              BCGF           = 16;                                              // "BCGF" surface tag.
+  int                              ABFE           = 17;                                              // "ABFE" surface tag.
+  int                              DCGH           = 18;                                              // "DCGH" surface tag.
+  int                              VOLUME         = 1;                                               // Entire volume tag.
+  std::vector<int>                 boundary;                                                         // Boundary array.
+  float                            px;
+  float                            py;
+  float                            pz;
+  float                            px_new;
+  float                            py_new;
+  float                            pz_new;
+
+  // SIMULATION VARIABLES:
+  float                            safety_CFL     = 0.5f;                                            // Courant-Friedrichs-Lewy safety coefficient [].
+  int                              N              = 3;                                               // Number of spatial dimensions of the MSM [].
+  float                            rho            = 1.0E-2f;                                         // Mass density [kg/m^3].
+  float                            E              = 1.0E-2f;                                         // Young's modulus [Pa];
+  float                            ni             = 0.2f;                                            // Poisson's ratio [];
+  float                            beta           = 1.0E-4f;                                         // Damping [kg*s*m].
+  int                              R              = 3;                                               // Particle's radius [#cells].
+
+  float                            ds;                                                               // Cell size [m].
+  float                            dV;                                                               // Cell volume [m^3].
+  float                            k;                                                                // Spring constant [N/m].
+  float                            K;                                                                // Bulk modulus [Pa].
+  float                            v_p;                                                              // Speed of P-waves [m/s].
+  float                            v_s;                                                              // Speed of S-waves [m/s].
+  float                            dm;                                                               // Node mass [kg].
+  float                            lambda;                                                           // Lamé 1st parameter [Pa].
+  float                            mu;                                                               // Lamé 2nd parameter (S-wave modulus) [Pa].
+  float                            M;                                                                // P-wave modulus [Pa].
+  float                            B;                                                                // Dispersive pressure [Pa].
+  float                            Q;                                                                // Dispersive to direct momentum flow ratio [].
+  float                            C;                                                                // Interaction momentum carriers pressure [Pa].
+  float                            D;                                                                // Dispersion fraction [-0.5...1.0].
+  float                            dt_CFL;                                                           // Courant-Friedrichs-Lewy critical time step [s].
+  float                            dt_SIM;                                                           // Simulation time step [s].
+
+  // BACKUP:
+  std::vector<nu_float4_structure> initial_position;                                                 // Backing up initial data...
+  std::vector<nu_float4_structure> initial_velocity;                                                 // Backing up initial data...
+  std::vector<nu_float4_structure> initial_velocity_int;                                             // Backing up initial data...
+  std::vector<nu_float4_structure> initial_velocity_est;                                             // Backing up initial data...
+  std::vector<nu_float4_structure> initial_acceleration;                                             // Backing up initial data...
+  std::vector<nu_float4_structure> initial_spinor_pos;                                               // Backing up initial data...
+  std::vector<nu_float4_structure> initial_frontier_pos;                                             // Backing up initial data...
 
   // MESH:
   spacetime->process (VOLUME, N, nu::MSH_HEX_8);                                                     // Processing mesh...
@@ -286,29 +297,6 @@ void data_initialization ()
   initial_acceleration = acceleration->data;                                                         // Setting backup data...
   initial_spinor_pos   = spinor_pos->data;                                                           // Setting backup data...
   initial_frontier_pos = frontier_pos->data;                                                         // Setting backup data...
-}
-
-///////////////////////////////////////////////////////////////////////////////////////////////////////
-//////////////////////////////////////////////// MAIN /////////////////////////////////////////////////
-///////////////////////////////////////////////////////////////////////////////////////////////////////
-int main ()
-{
-  // INDEXES:
-  GLuint i;                                                                                          // Index [#].
-  GLuint j;                                                                                          // Index [#].
-
-  // MOUSE PARAMETERS:
-  float  ms_orbit_rate  = 1.0f;                                                                      // Orbit rotation rate [rev/s].
-  float  ms_pan_rate    = 5.0f;                                                                      // Pan translation rate [m/s].
-  float  ms_decaytime   = 1.25f;                                                                     // Pan LP filter decay time [s].
-
-  // GAMEPAD PARAMETERS:
-  float  gmp_orbit_rate = 1.0f;                                                                      // Orbit angular rate coefficient [rev/s].
-  float  gmp_pan_rate   = 1.0f;                                                                      // Pan translation rate [m/s].
-  float  gmp_decaytime  = 1.25f;                                                                     // Low pass filter decay time [s].
-  float  gmp_deadzone   = 0.30f;                                                                     // Gamepad joystick deadzone [0...1].
-
-  data_initialization ();                                                                            // Initializing data...
 
   ////////////////////////////////////////////////////////////////////////////////////////////////////
   //////////////////////////////////// OPENCL KERNELS INITIALIZATION /////////////////////////////////
@@ -370,6 +358,235 @@ int main ()
     hud->input ("Poisson's ratio:  ", "[]      ", "nu", &ni);                                        // Adding input parameter...
     hud->input ("Damping:          ", "[kg*s*m]", "beta", &beta);                                    // Adding input parameter...
     hud->input ("Particle's radius:", "[#cells]", "R", &R);                                          // Adding input parameter...
+
+    if(hud->button ("(U)pdate", 50) || gl->key_U)
+    {
+      dV          = (float)pow (ds, N);                                                              // Computing cell volume...
+      dm          = rho*dV;                                                                          // Computing node mass...
+      lambda      = (E*ni)/((1.0f + ni)*(ni - N*ni + 1.0f));                                         // Computing 1st Lamé parameter...
+      mu          = E/(2.0f*(1.0f + ni));                                                            // Computing 2nd Lamé parameter (S-wave modulus)...
+      M           = E*(1.0f - ni)/((1.0f + ni)*(ni - N*ni + 1.0f));                                  // Computing P-wave modulus...
+      B           = lambda - mu;                                                                     // Computing dispersive pressure...
+      Q           = B/(mu*(1.0f + 2.0f/N));                                                          // Computing dispersive to direct momentum flow ratio...
+      C           = mu + mu*abs (Q);                                                                 // Computing interaction momentum carriers pressure...
+      D           = Q/(1.0f + abs (Q));                                                              // Computing dispersion fraction...
+      k           = 5.0f/(2.0f + 4.0f*sqrt (2.0f))*C*ds;                                             // Computing spring constant (valid only for N = 3)...
+      K           = C*(1 + 2.0f/N)*(D - abs (D) + 1);                                                // Computing bulk modulus...
+      v_p         = sqrt (abs (M/rho));                                                              // Computing speed of P-waves...
+      v_s         = sqrt (abs (mu/rho));                                                             // Computing speed of S-waves...
+      dt_CFL      = ds/(N*(v_p + v_s));                                                              // Computing Courant-Friedrichs-Lewy critical time step [s]...
+      dt_SIM      = safety_CFL*dt_CFL;                                                               // Setting simulation time step [s]...
+
+      // RECOMPUTING NEUTRINO ARRAYS (parameters):
+      dt->data[0] = dt_SIM;                                                                          // Setting time step...
+
+      // SETTING NEUTRINO ARRAYS ("nodes" depending):
+      for(i = 0; i < nodes; i++)
+      {
+        velocity->data[i].w     = beta;                                                              // Setting friction...
+        acceleration->data[i].w = dm;                                                                // Setting mass...
+
+        // Finding spinor:
+        if(
+           (sqrt (3.0f)*ds*R) <
+           sqrt (
+                 pow (position->data[i].x, 2) +
+                 pow (position->data[i].y, 2) +
+                 pow (position->data[i].z, 2)
+                ) &&
+           (sqrt (
+                  pow (position->data[i].x, 2) +
+                  pow (position->data[i].y, 2) +
+                  pow (position->data[i].z, 2)
+                 ) <
+            sqrt (3.0f)*ds*(R + 1))
+          )
+        {
+          spinor->data.push_back (i);                                                                // Setting spinor index...
+          spinor_pos->data.push_back (position->data[i]);                                            // Setting initial spinor's position...
+          position->data[i].w = 0.0f;                                                                // Resetting freedom flag... (EZOR 25APR2021: temporary set to 1)
+        }
+      }
+
+      spinor_num->data.push_back ((GLint)spinor->data.size ());
+
+      // SETTING NEUTRINO ARRAYS ("neighbours" depending):
+      for(i = 0; i < neighbours; i++)
+      {
+        // Building 3D isotropic 18-node cubic MSM:
+        if(resting->data[i] < (ds + 0.01f))
+        {
+          stiffness->data.push_back (k);                                                             // Setting 1st nearest neighbour link stiffness...
+        }
+        if((resting->data[i] > (ds + 0.01f)) &&
+           (resting->data[i] < (sqrt (2.0f)*ds + 0.01f))
+          )
+        {
+          stiffness->data.push_back (k);                                                             // Setting 2nd nearest neighbour link stiffness...
+        }
+        if((resting->data[i] > (sqrt (2.0f)*ds + 0.01f)) &&
+           (resting->data[i] < (sqrt (3.0f)*ds + 0.01f))
+          )
+        {
+          stiffness->data.push_back (0.0f);                                                          // Setting 3rd nearest neighbour link stiffness...
+        }
+
+        // Showing only 1st neighbours:
+        if(resting->data[i] < (ds + 0.01f))
+        {
+          color->data.push_back ({0.0f, 1.0f, 0.0f, 0.3f});                                          // Setting color...
+        }
+        else
+        {
+          color->data.push_back ({0.0f, 0.0f, 0.0f, 0.0f});                                          // Setting color...
+        }
+      }
+
+
+
+      // RECOMPUTING NEUTRINO ARRAYS ("nodes" depending):
+      for(i = 0; i < nodes; i++)
+      {
+        velocity->data[i].w     = beta;                                                              // Setting friction...
+        acceleration->data[i].w = dm;                                                                // Setting mass...
+
+        // Computing minimum element offset index:
+        if(i == 0)
+        {
+          j_min = 0;                                                                                 // Setting minimum element offset index...
+        }
+        else
+        {
+          j_min = offset->data[i - 1];                                                               // Setting minimum element offset index...
+        }
+
+        j_max                   = offset->data[i];                                                   // Setting maximum element offset index...
+
+        for(j = j_min; j < j_max; j++)
+        {
+          stiffness->data[j] = K;                                                                    // Setting link stiffness...
+        }
+      }
+
+      cl->write (2);                                                                                 // Writing OpenCL data: velocity...
+      cl->write (5);                                                                                 // Writing OpenCL data: acceleration...
+      cl->write (6);                                                                                 // Writing OpenCL data: stiffness...
+      cl->write (17);                                                                                // Writing OpenCL data: dispersion...
+      cl->write (18);                                                                                // Writing OpenCL data: dt...
+    }
+
+    hud->space (20);                                                                                 // Setting spacing...
+
+    if(hud->button ("(R)estart", 50) || gl->button_TRIANGLE || gl->key_R)
+    {
+      dV             = (float)pow (ds, N);                                                           // Computing cell volume...
+      dm             = rho*dV;                                                                       // Computing node mass...
+      lambda         = (E*ni)/((1.0f + ni)*(ni - N*ni + 1.0f));                                      // Computing 1st Lamé parameter...
+      mu             = E/(2.0f*(1.0f + ni));                                                         // Computing 2nd Lamé parameter (S-wave modulus)...
+      M              = E*(1.0f - ni)/((1.0f + ni)*(ni - N*ni + 1.0f));                               // Computing P-wave modulus...
+      B              = lambda - mu;                                                                  // Computing dispersive pressure...
+      Q              = B/(mu*(1.0f + 2.0f/N));                                                       // Computing dispersive to direct momentum flow ratio...
+      C              = mu + mu*abs (Q);                                                              // Computing interaction momentum carriers pressure...
+      D              = Q/(1.0f + abs (Q));                                                           // Computing dispersion fraction...
+      k              = 5.0f/(2.0f + 4.0f*sqrt (2.0f))*C*ds;                                          // Computing spring constant (valid only for N = 3)...
+      K              = C*(1 + 2.0f/N)*(D - abs (D) + 1);                                             // Computing bulk modulus...
+      v_p            = sqrt (abs (M/rho));                                                           // Computing speed of P-waves...
+      v_s            = sqrt (abs (mu/rho));                                                          // Computing speed of S-waves...
+      dt_CFL         = ds/(N*(v_p + v_s));                                                           // Computing Courant-Friedrichs-Lewy critical time step [s]...
+      dt_SIM         = safety_CFL*dt_CFL;                                                            // Setting simulation time step [s]...
+
+      // RECOMPUTING NEUTRINO ARRAYS (parameters):
+      dt->data[0]    = dt_SIM;                                                                       // Setting time step...
+      position->data = initial_position;                                                             // Restoring backup...
+
+      // RECOMPUTING NEUTRINO ARRAYS ("nodes" depending):
+      for(i = 0; i < nodes; i++)
+      {
+
+        velocity->data[i].w     = beta;                                                              // Setting friction...
+        acceleration->data[i].w = dm;                                                                // Setting mass...
+
+        // Computing minimum element offset index:
+        if(i == 0)
+        {
+          j_min = 0;                                                                                 // Setting minimum element offset index...
+        }
+        else
+        {
+          j_min = offset->data[i - 1];                                                               // Setting minimum element offset index...
+        }
+
+        j_max                   = offset->data[i];                                                   // Setting maximum element offset index...
+
+        for(j = j_min; j < j_max; j++)
+        {
+          stiffness->data[j] = K;                                                                    // Setting link stiffness...
+        }
+      }
+
+      cl->write (1);                                                                                 // Writing OpenCL data: position...
+      cl->write (2);                                                                                 // Writing OpenCL data: velocity...
+      cl->write (5);                                                                                 // Writing OpenCL data: acceleration...
+      cl->write (6);                                                                                 // Writing OpenCL data: stiffness...
+      cl->write (17);                                                                                // Writing OpenCL data: dispersion...
+      cl->write (18);                                                                                // Writing OpenCL data: dt...
+
+
+      velocity->data     = initial_velocity;                                                         // Restoring backup...
+      velocity_int->data = initial_velocity_int;                                                     // Restoring backup...
+      acceleration->data = initial_acceleration;                                                     // Restoring backup...
+
+      nu::float4* position     = new nu::float4 (0);                                                 // vec4(position.xyz [m], freedom []).
+      nu::float4* velocity     = new nu::float4 (1);                                                 // vec4(velocity.xyz [m/s], friction [N*s/m]).
+      nu::float4* velocity_int = new nu::float4 (2);                                                 // vec4(velocity.xyz (intermediate) [m/s], number of 1st + 2nd nearest neighbours []).
+      nu::float4* velocity_est = new nu::float4 (3);                                                 // vec4(velocity.xyz (estimation) [m/s], radiative energy [J]).
+      nu::float4* acceleration = new nu::float4 (4);                                                 // vec4(acceleration.xyz [m/s^2], mass [kg]).
+
+      nu::float4* color        = new nu::float4 (5);                                                 // vec4(color.xyz [], alpha []).
+      nu::float1* stiffness    = new nu::float1 (6);                                                 // Stiffness.
+      nu::float1* resting      = new nu::float1 (7);                                                 // Resting.
+      nu::int1*   central      = new nu::int1 (8);                                                   // Central nodes.
+      nu::int1*   neighbour    = new nu::int1 (9);                                                   // Neighbour.
+      nu::int1*   offset       = new nu::int1 (10);                                                  // Offset.
+
+      nu::int1*   spinor       = new nu::int1 (11);                                                  // Spinor.
+      nu::int1*   spinor_num   = new nu::int1 (12);                                                  // Spinor cells number.
+      nu::float4* spinor_pos   = new nu::float4 (13);                                                // Spinor cells position.
+      nu::int1*   frontier     = new nu::int1 (14);                                                  // Spacetime frontier.
+      nu::int1*   frontier_num = new nu::int1 (15);                                                  // Frontier nodes number.
+      nu::float4* frontier_pos = new nu::float4 (16);                                                // Frontier nodes position.
+
+      nu::float1* dispersion   = new nu::float1 (17);                                                // Dispersion fraction [-0.5...1.0].
+      nu::float1* dt           = new nu::float1 (18);                                                // Time step [s].
+
+      cl->write (1);                                                                                 // Writing data...
+      cl->write (2);                                                                                 // Writing data...
+      cl->write (3);                                                                                 // Writing data...
+      cl->write (4);                                                                                 // Writing data...
+      cl->write (5);                                                                                 // Writing data...
+    }
+
+    hud->space (20);                                                                                 // Setting spacing...
+
+    if(hud->button ("(M)onocular") || gl->key_M)
+    {
+      proj_mode = nu::MONOCULAR;                                                                     // Setting monocular projection...
+    }
+
+    hud->sameline (300);                                                                             // Setting spacing...
+
+    if(hud->button ("(B)inocular") || gl->key_B)
+    {
+      proj_mode = nu::BINOCULAR;                                                                     // Setting binocular projection...
+    }
+
+    hud->sameline (400);                                                                             // Setting spacing...
+
+    if(hud->button ("(E)xit") || gl->button_CIRCLE || gl->key_E)
+    {
+      gl->close ();                                                                                  // Closing gl...
+    }
+
     hud->finish ();                                                                                  // Finishing window...
 
     hud->window ("DERIVED LATTICE PARAMETER", 400);                                                  // Creating window...

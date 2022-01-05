@@ -3,12 +3,12 @@
 /// @date     16JAN2021
 /// @brief    1st kernel.
 /// @details  Applies freedom contraints, computes new position, uptades intermediate position.
-__kernel void thekernel(__global float4*    position,                                 // vec4(position.xyz [m], freedom []).
+__kernel void thekernel(__global float4*    color,                                    // vec4(color.xyz [], alpha []).
+                        __global float4*    position,                                 // vec4(position.xyz [m], freedom []).
                         __global float4*    velocity,                                 // vec4(velocity.xyz [m/s], friction [N*s/m]).
                         __global float4*    velocity_int,                             // vec4(velocity (intermediate) [m/s], number of 1st + 2nd nearest neighbours []).
                         __global float4*    velocity_est,                             // vec4(velocity.xyz (estimation) [m/s], radiative energy [J]).
                         __global float4*    acceleration,                             // vec4(acceleration.xyz [m/s^2], mass [kg]).
-                        __global float4*    color,                                    // vec4(color.xyz [], alpha []).
                         __global float*     stiffness,                                // Stiffness.
                         __global float*     resting,                                  // Resting distance.
                         __global int*       central,                                  // Central.
