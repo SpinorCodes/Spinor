@@ -10,12 +10,12 @@ uniform float AR;                                                               
 layout (points) in;                                                             // Input points.
 layout (triangle_strip, max_vertices = 4) out;                                 // Output points.
 
-layout(std430, binding = 5) buffer voxel_color
+layout(std430, binding = 0) buffer voxel_color
 {
   vec4 color_SSBO[];                                                            // Voxel color SSBO.
 };
 
-layout(std430, binding = 0) buffer voxel_position
+layout(std430, binding = 1) buffer voxel_position
 {
   vec4 position_SSBO[];                                                         // Voxel position SSBO.
 };
