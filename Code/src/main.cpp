@@ -64,8 +64,6 @@ int main ()
   // INDEXES:
   GLuint                           i;                                                                // Index [#].
   GLuint                           j;                                                                // Index [#].
-  GLuint                           j_min;                                                            // Index [#].
-  GLuint                           j_max;                                                            // Index [#].
 
   // OPENGL:
   nu::opengl*                      gl             = new nu::opengl (NM, SX, SY, OX, OY, PX, PY, PZ); // OpenGL context.
@@ -328,6 +326,8 @@ int main ()
   while(!gl->closed ())                                                                              // Opening window...
   {
     cl->get_tic ();                                                                                  // Getting "tic" [us]...
+
+    cl->write (16);                                                                                  // Writing frontier position...
     cl->acquire ();                                                                                  // Acquiring variables...
     cl->execute (kernel_1, nu::WAIT);                                                                // Executing OpenCL kernel...
     cl->execute (kernel_2, nu::WAIT);                                                                // Executing OpenCL kernel...
@@ -380,7 +380,7 @@ int main ()
       {
         velocity->data[i].w     = beta;                                                              // Setting friction...
         acceleration->data[i].w = dm;                                                                // Setting mass...
-
+/*
         // Finding spinor:
         if(
            (sqrt (3.0f)*ds*R) <
@@ -400,28 +400,31 @@ int main ()
           spinor->data.push_back (i);                                                                // Setting spinor index...
           spinor_pos->data.push_back (position->data[i]);                                            // Setting initial spinor's position...
         }
+ */
       }
 
       spinor_num->data[0] = (GLint)spinor->data.size ();                                             // Setting number of spinor cells...
 
+
       // SETTING NEUTRINO ARRAYS ("neighbours" depending):
       for(i = 0; i < neighbours; i++)
       {
-        // Computing minimum element offset index:
-        if(i == 0)
+        // Building 3D isotropic 18-node cubic MSM:
+        if(resting->data[i] < (ds + 0.01f))
         {
-          j_min = 0;                                                                                 // Setting minimum element offset index...
+          stiffness->data[i] = k;                                                                    // Setting 1st nearest neighbour link stiffness...
         }
-        else
+        if((resting->data[i] > (ds + 0.01f)) &&
+           (resting->data[i] < (sqrt (2.0f)*ds + 0.01f))
+          )
         {
-          j_min = offset->data[i - 1];                                                               // Setting minimum element offset index...
+          stiffness->data[i] = k;                                                                    // Setting 2nd nearest neighbour link stiffness...
         }
-
-        j_max = offset->data[i];                                                                     // Setting maximum element offset index...
-
-        for(j = j_min; j < j_max; j++)
+        if((resting->data[i] > (sqrt (2.0f)*ds + 0.01f)) &&
+           (resting->data[i] < (sqrt (3.0f)*ds + 0.01f))
+          )
         {
-          stiffness->data[j] = K;                                                                    // Setting link stiffness...
+          stiffness->data[i] = 0.0f;                                                                 // Setting 3rd nearest neighbour link stiffness...
         }
       }
 
@@ -430,6 +433,7 @@ int main ()
       cl->write (6);                                                                                 // Writing OpenCL data: stiffness...
       cl->write (17);                                                                                // Writing OpenCL data: dispersion...
       cl->write (18);                                                                                // Writing OpenCL data: dt...
+
     }
 
     hud->space (50);                                                                                 // Setting spacing...
@@ -500,21 +504,22 @@ int main ()
       // SETTING NEUTRINO ARRAYS ("neighbours" depending):
       for(i = 0; i < neighbours; i++)
       {
-        // Computing minimum element offset index:
-        if(i == 0)
+        // Building 3D isotropic 18-node cubic MSM:
+        if(resting->data[i] < (ds + 0.01f))
         {
-          j_min = 0;                                                                                 // Setting minimum element offset index...
+          stiffness->data[i] = k;                                                                    // Setting 1st nearest neighbour link stiffness...
         }
-        else
+        if((resting->data[i] > (ds + 0.01f)) &&
+           (resting->data[i] < (sqrt (2.0f)*ds + 0.01f))
+          )
         {
-          j_min = offset->data[i - 1];                                                               // Setting minimum element offset index...
+          stiffness->data[i] = k;                                                                    // Setting 2nd nearest neighbour link stiffness...
         }
-
-        j_max = offset->data[i];                                                                     // Setting maximum element offset index...
-
-        for(j = j_min; j < j_max; j++)
+        if((resting->data[i] > (sqrt (2.0f)*ds + 0.01f)) &&
+           (resting->data[i] < (sqrt (3.0f)*ds + 0.01f))
+          )
         {
-          stiffness->data[j] = K;                                                                    // Setting link stiffness...
+          stiffness->data[i] = 0.0f;                                                                 // Setting 3rd nearest neighbour link stiffness...
         }
       }
 
@@ -626,8 +631,6 @@ int main ()
         spinor_pos->data[i].y = py_new;                                                              // Updating spinor x-position...
         spinor_pos->data[i].z = pz_new;                                                              // Updating spinor y-position...
       }
-
-      cl->write (13);                                                                                // Writing spinor's position...
     }
 
     if(gl->button_DPAD_UP || gl->key_UP)                                                             // Twist (x-axis, CW)...
@@ -643,8 +646,6 @@ int main ()
         spinor_pos->data[i].y = py_new;                                                              // Updating spinor x-position...
         spinor_pos->data[i].z = pz_new;                                                              // Updating spinor y-position...
       }
-
-      cl->write (13);                                                                                // Writing spinor's position...
     }
 
     if(gl->button_LEFT_BUMPER || gl->key_O)                                                          // Spinor compression...
@@ -663,8 +664,6 @@ int main ()
         spinor_pos->data[i].y = py_new;                                                              // Updating spinor Y-position...
         spinor_pos->data[i].z = pz_new;                                                              // Updating spinor Z-position...
       }
-
-      cl->write (13);                                                                                // Writing spinor's position...
     }
 
     if(gl->button_RIGHT_BUMPER || gl->key_P)                                                         // Spinor expansion...
@@ -683,8 +682,6 @@ int main ()
         spinor_pos->data[i].y = py_new;                                                              // Updating spinor y-position...
         spinor_pos->data[i].z = pz_new;                                                              // Updating spinor z-position...
       }
-
-      cl->write (13);                                                                                // Writing spinor's position...
     }
 
     if(gl->button_SQUARE || gl->key_Q)                                                               // Boundary compression...
@@ -705,8 +702,6 @@ int main ()
 
         pressure++;
       }
-
-      cl->write (16);                                                                                // Writing frontier position...
     }
 
     if(gl->button_CIRCLE || gl->key_W)                                                               // Frontier expansion...
@@ -727,8 +722,6 @@ int main ()
 
         pressure--;
       }
-
-      cl->write (16);                                                                                // Writing frontier position...
     }
 
     gl->end ();                                                                                      // Ending gl...
