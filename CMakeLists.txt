@@ -50,8 +50,8 @@ set(IMGUI_SOURCES                                                               
   ${IMGUI_PATH}/imgui.cpp
   ${IMGUI_PATH}/imgui_demo.cpp
   ${IMGUI_PATH}/imgui_draw.cpp
-  ${IMGUI_PATH}/imgui_impl_glfw.cpp
-  ${IMGUI_PATH}/imgui_impl_opengl3.cpp
+  ${IMGUI_PATH}/backends/imgui_impl_glfw.cpp
+  ${IMGUI_PATH}/backends/imgui_impl_opengl3.cpp
   ${IMGUI_PATH}/imgui_tables.cpp
   ${IMGUI_PATH}/imgui_widgets.cpp)
 set(IMPLOT_SOURCES                                                                                  # All IMPLOT source files.
@@ -65,6 +65,7 @@ message("Adding include files...")                                              
 set(INCLUDES                                                                                        # Setting "INCLUDES" variable...
   ${CMAKE_HOME_DIRECTORY}/include                                                                   # Example include directory.
   ${IMGUI_PATH}                                                                                     # IMGUI include directory.
+  ${IMGUI_PATH}/backends                                                                            # IMGUI include backends directory.
   ${IMPLOT_PATH}                                                                                    # IMPLOT include directory.
   ${GLAD_PATH}/include                                                                              # GLAD include directory.
   ${GLFW_PATH}/include                                                                              # GLFW include directory.
